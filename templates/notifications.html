@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications - Instagram Clone{% endblock %}
+
+{% block extra_css %}
+<style>
+    .notifications-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .notifications-header {
+        margin-bottom: 32px;
+    }
+
+    .notifications-header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 0;
+    }
+
+    .activity-empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        margin-bottom: 40px;
+    }
+
+    .activity-icon {
+        width: 96px;
+        height: 96px;
+        border: 3px solid var(--text-primary);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .activity-icon i {
+        font-size: 48px;
+        color: var(--text-primary);
+    }
+
+    .activity-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: var(--text-primary);
+    }
+
+    .activity-description {
+        font-size: 14px;
+        color: var(--text-secondary);
+        max-width: 350px;
+        margin: 0 auto;
+    }
+
+    .suggestions-section {
+        margin-top: 40px;
+    }
+
+    .suggestions-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    .suggestion-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+        margin-bottom: 12px;
+    }
+
+    .suggestion-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: var(--border-color);
+    }
+
+    .suggestion-info {
+        flex: 1;
+    }
+
+    .suggestion-username {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-primary);
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    .suggestion-name {
+        font-size: 14px;
+        color: var(--text-secondary);
+    }
+
+    .suggestion-subtitle {
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+
+    .follow-button {
+        background: var(--link-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 7px 24px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    .follow-button:hover {
+        opacity: 0.8;
+    }
+
+    .follow-button.following {
+        background: var(--secondary-bg);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+        .notifications-container {
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="notifications-container">
+    <div class="notifications-header">
+        <h1>Notifications</h1>
+    </div>
+
+    <div class="activity-empty-state">
+        <div class="activity-icon">
+            <i class="far fa-heart"></i>
+        </div>
+        <div class="activity-title">Activity On Your Posts</div>
+        <div class="activity-description">
+            When someone likes or comments on one of your posts, you'll see it here.
+        </div>
+    </div>
+
+    <div class="suggestions-section">
+        <div class="suggestions-title">Suggested for you</div>
+        <div id="suggestionsList">
+            <div class="loading">Loading suggestions...</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function loadSuggestions() {
+        try {
+            const users = await apiCall('/search/?q=');
+            const container = document.getElementById('suggestionsList');
+            
+            if (users.length === 0) {
+                container.innerHTML = '<div class="loading">No suggestions available</div>';
+                return;
+            }
+
+            container.innerHTML = users.slice(0, 10).map(user => `
+                <div class="suggestion-item">
+                    <img src="${user.profile?.avatar || 'https://via.placeholder.com/44'}" 
+                         alt="${user.username}" 
+                         class="suggestion-avatar">
+                    <div class="suggestion-info">
+                        <a href="/profile/${user.username}" class="suggestion-username">${user.username}</a>
+                        <div class="suggestion-name">${user.first_name || user.username}</div>
+                        <div class="suggestion-subtitle">Suggested for you</div>
+                    </div>
+                    <button class="follow-button" onclick="followUser('${user.username}', this)">Follow</button>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading suggestions:', error);
+            document.getElementById('suggestionsList').innerHTML = 
+                '<div class="loading">Failed to load suggestions</div>';
+        }
+    }
+
+    async function followUser(username, button) {
+        try {
+            await apiCall(`/profile/${username}/follow/`, { method: 'POST' });
+            button.textContent = 'Following';
+            button.classList.add('following');
+            button.disabled = false;
+        } catch (error) {
+            console.error('Error following user:', error);
+        }
+    }
+
+    // Initialize
+    if (authToken) {
+        loadSuggestions();
+    } else {
+        window.location.href = '/login';
+    }
+</script>
+{% endblock %}

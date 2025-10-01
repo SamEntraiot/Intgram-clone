@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Instagram Clone{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-bg: #ffffff;
+            --secondary-bg: #fafafa;
+            --border-color: #dbdbdb;
+            --text-primary: #262626;
+            --text-secondary: #8e8e8e;
+            --link-color: #0095f6;
+            --error-color: #ed4956;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--secondary-bg);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 245px;
+            height: 100vh;
+            background-color: var(--primary-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 8px 12px 20px;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            font-family: 'Cookie', cursive;
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 25px 12px 16px;
+            display: block;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 16px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 16px;
+            transition: background-color 0.2s;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background-color: var(--secondary-bg);
+        }
+
+        .nav-item.active {
+            font-weight: 700;
+        }
+
+        .nav-item i {
+            font-size: 24px;
+            width: 24px;
+        }
+
+        .badge {
+            position: absolute;
+            top: 8px;
+            left: 28px;
+            background-color: var(--error-color);
+            color: white;
+            border-radius: 50%;
+            min-width: 20px;
+            height: 20px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+        }
+
+        /* Hide legacy navbar */
+        .navbar {
+            display: none;
+        }
+
+        /* Search Panel */
+        .search-panel {
+            position: fixed;
+            left: 245px;
+            top: 0;
+            width: 397px;
+            height: 100vh;
+            background-color: var(--primary-bg);
+            border-right: 1px solid var(--border-color);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .search-panel.active {
+            transform: translateX(0);
+        }
+
+        .search-panel-header {
+            padding: 24px 24px 36px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-panel-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .search-input-container {
+            position: relative;
+        }
+
+        .search-input-container input {
+            width: 100%;
+            padding: 12px 16px 12px 40px;
+            background-color: var(--secondary-bg);
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .search-input-container i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        .search-input-container .clear-search {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--text-secondary);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .search-input-container input:not(:placeholder-shown) ~ .clear-search {
+            display: flex;
+        }
+
+        .search-results {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px 0;
+        }
+
+        .search-result-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 24px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .search-result-item:hover {
+            background-color: var(--secondary-bg);
+        }
+
+        .search-result-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: var(--border-color);
+        }
+
+        .search-result-info {
+            flex: 1;
+        }
+
+        .search-result-username {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .search-result-name {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .no-search-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 245px;
+            padding: 20px 40px;
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.search-active {
+            margin-left: 642px;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        .btn-primary {
+            background-color: var(--link-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .btn-danger {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.65);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--primary-bg);
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1264px) {
+            .sidebar {
+                width: 72px;
+            }
+
+            .nav-item span {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 72px;
+            }
+
+            .search-panel {
+                left: 72px;
+            }
+
+            .main-content.search-active {
+                margin-left: 469px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                bottom: 0;
+                top: auto;
+                border-right: none;
+                border-top: 1px solid var(--border-color);
+                padding: 8px;
+            }
+
+            .logo {
+                display: none;
+            }
+
+            .nav-menu {
+                flex-direction: row;
+                justify-content: space-around;
+                margin-top: 0;
+            }
+
+            .nav-item {
+                padding: 8px;
+            }
+
+            .nav-item span {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+                padding-bottom: 80px;
+            }
+
+            .search-panel {
+                left: 0;
+                width: 100%;
+            }
+
+            .main-content.search-active {
+                margin-left: 0;
+            }
+        }
+
+        /* Utility Classes */
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <a href="/" class="logo">Instagram</a>
+        
+        <nav class="nav-menu">
+            <a href="/" class="nav-item">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </a>
+            <a href="#" onclick="toggleSearchPanel(); return false;" class="nav-item" id="searchNavItem">
+                <i class="fas fa-search"></i>
+                <span>Search</span>
+            </a>
+            <a href="/explore" class="nav-item">
+                <i class="far fa-compass"></i>
+                <span>Explore</span>
+            </a>
+            <a href="/messages" class="nav-item">
+                <i class="far fa-paper-plane"></i>
+                <span>Messages</span>
+                <span class="badge hidden" id="messageBadge">0</span>
+            </a>
+            <a href="/notifications" class="nav-item">
+                <i class="far fa-heart"></i>
+                <span>Notifications</span>
+                <span class="badge hidden" id="notificationBadge">0</span>
+            </a>
+            <a href="#" onclick="openCreateModal(); return false;" class="nav-item">
+                <i class="far fa-plus-square"></i>
+                <span>Create</span>
+            </a>
+            <a href="/profile" class="nav-item">
+                <i class="far fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Search Panel -->
+    <div class="search-panel" id="searchPanel">
+        <div class="search-panel-header">
+            <h2>Search</h2>
+            <div class="search-input-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchPanelInput" placeholder="Search">
+                <span class="clear-search" onclick="clearSearch()">×</span>
+            </div>
+        </div>
+        <div class="search-results" id="searchResults">
+            <div class="no-search-results">
+                <p>No recent searches</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Create Post Modal -->
+    <div id="createPostModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Post</h3>
+                <button class="close-modal" onclick="closeModal('createPostModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createPostForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Image</label>
+                        <input type="file" name="image" accept="image/*" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Caption</label>
+                        <textarea name="caption" placeholder="Write a caption..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Share</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        const API_URL = '/api';
+        let authToken = localStorage.getItem('authToken');
+
+        // Modal functions
+        function openCreateModal() {
+            document.getElementById('createPostModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // API Helper
+        async function apiCall(endpoint, options = {}) {
+            const headers = {
+                ...options.headers,
+            };
+
+            if (authToken && !options.noAuth) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+
+            if (!(options.body instanceof FormData)) {
+                headers['Content-Type'] = 'application/json';
+            }
+
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                ...options,
+                headers
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            return response.json();
+        }
+
+        // Search Panel Functions
+        function toggleSearchPanel() {
+            const panel = document.getElementById('searchPanel');
+            const mainContent = document.querySelector('.main-content');
+            const isActive = panel.classList.contains('active');
+            
+            if (isActive) {
+                panel.classList.remove('active');
+                mainContent.classList.remove('search-active');
+            } else {
+                panel.classList.add('active');
+                mainContent.classList.add('search-active');
+                document.getElementById('searchPanelInput').focus();
+            }
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('searchPanelInput');
+            input.value = '';
+            input.focus();
+            document.getElementById('searchResults').innerHTML = `
+                <div class="no-search-results">
+                    <p>No recent searches</p>
+                </div>
+            `;
+        }
+
+        // Search functionality
+        let searchTimeout;
+        document.getElementById('searchPanelInput')?.addEventListener('input', async (e) => {
+            clearTimeout(searchTimeout);
+            const query = e.target.value.trim();
+            const resultsContainer = document.getElementById('searchResults');
+            
+            if (query.length > 0) {
+                searchTimeout = setTimeout(async () => {
+                    try {
+                        const results = await apiCall(`/search/?q=${query}`);
+                        
+                        if (results.length === 0) {
+                            resultsContainer.innerHTML = `
+                                <div class="no-search-results">
+                                    <p>No results found</p>
+                                </div>
+                            `;
+                        } else {
+                            resultsContainer.innerHTML = results.map(user => `
+                                <a href="/profile/${user.username}" class="search-result-item">
+                                    <img src="${user.profile?.avatar || 'https://via.placeholder.com/44'}" 
+                                         alt="${user.username}" 
+                                         class="search-result-avatar">
+                                    <div class="search-result-info">
+                                        <div class="search-result-username">${user.username}</div>
+                                        <div class="search-result-name">${user.first_name || user.username}</div>
+                                    </div>
+                                </a>
+                            `).join('');
+                        }
+                    } catch (error) {
+                        console.error('Search error:', error);
+                        resultsContainer.innerHTML = `
+                            <div class="no-search-results">
+                                <p>Error loading results</p>
+                            </div>
+                        `;
+                    }
+                }, 300);
+            } else {
+                resultsContainer.innerHTML = `
+                    <div class="no-search-results">
+                        <p>No recent searches</p>
+                    </div>
+                `;
+            }
+        });
+
+        // Close search panel when clicking outside
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('searchPanel');
+            const searchNav = document.getElementById('searchNavItem');
+            
+            if (panel && panel.classList.contains('active')) {
+                if (!panel.contains(e.target) && !searchNav.contains(e.target)) {
+                    toggleSearchPanel();
+                }
+            }
+        });
+
+        // Create post
+        document.getElementById('createPostForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            try {
+                await apiCall('/posts/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                closeModal('createPostModal');
+                e.target.reset();
+                location.reload();
+            } catch (error) {
+                console.error('Error creating post:', error);
+                alert('Failed to create post');
+            }
+        });
+
+        // Load notification count
+        async function loadNotificationCount() {
+            if (!authToken) return;
+            
+            try {
+                const notifications = await apiCall('/notifications/');
+                const unreadCount = notifications.filter(n => !n.is_read).length;
+                
+                if (unreadCount > 0) {
+                    const badge = document.getElementById('notificationBadge');
+                    badge.textContent = unreadCount;
+                    badge.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        }
+
+        // Initialize
+        if (authToken) {
+            loadNotificationCount();
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

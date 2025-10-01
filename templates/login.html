@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Instagram Clone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #fafafa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 350px;
+            width: 100%;
+        }
+
+        .auth-box {
+            background: white;
+            border: 1px solid #dbdbdb;
+            padding: 40px;
+            margin-bottom: 10px;
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            font-family: 'Cookie', cursive;
+        }
+
+        .form-group {
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            font-size: 14px;
+            background-color: #fafafa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #a8a8a8;
+            background-color: white;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 8px;
+            background-color: #0095f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+
+        .btn:hover {
+            background-color: #1877f2;
+        }
+
+        .btn:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #8e8e8e;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: #dbdbdb;
+        }
+
+        .divider span {
+            padding: 0 18px;
+        }
+
+        .switch-auth {
+            background: white;
+            border: 1px solid #dbdbdb;
+            padding: 24px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .switch-auth a {
+            color: #0095f6;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .error-message {
+            color: #ed4956;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .success-message {
+            color: #00a400;
+            font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 12px;
+        }
+
+        .forgot-password a {
+            color: #00376b;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="auth-box">
+            <h1 class="logo">Instagram</h1>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <input type="text" name="username" placeholder="Username" required>
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" placeholder="Password" required>
+                </div>
+                <button type="submit" class="btn">Log In</button>
+                <div id="errorMessage" class="error-message"></div>
+            </form>
+
+            <div class="divider">
+                <span>OR</span>
+            </div>
+
+            <div class="forgot-password">
+                <a href="#">Forgot password?</a>
+            </div>
+        </div>
+
+        <div class="switch-auth">
+            Don't have an account? <a href="#" onclick="showRegister()">Sign up</a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = {
+                username: formData.get('username'),
+                password: formData.get('password')
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Invalid credentials');
+                }
+
+                const result = await response.json();
+                localStorage.setItem('authToken', result.access);
+                localStorage.setItem('refreshToken', result.refresh);
+                window.location.href = '/';
+            } catch (error) {
+                document.getElementById('errorMessage').textContent = 'Invalid username or password';
+            }
+        });
+
+        function showRegister() {
+            const container = document.querySelector('.auth-box');
+            container.innerHTML = `
+                <h1 class="logo">Instagram</h1>
+                <p style="text-align: center; color: #8e8e8e; font-size: 17px; font-weight: 600; margin-bottom: 20px;">
+                    Sign up to see photos and videos from your friends.
+                </p>
+                
+                <form id="registerForm">
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" name="username" placeholder="Username" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="password" placeholder="Password" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" name="password2" placeholder="Confirm Password" required>
+                    </div>
+                    <button type="submit" class="btn">Sign Up</button>
+                    <div id="errorMessage" class="error-message"></div>
+                    <div id="successMessage" class="success-message"></div>
+                </form>
+            `;
+
+            document.querySelector('.switch-auth').innerHTML = 'Have an account? <a href="/login">Log in</a>';
+
+            document.getElementById('registerForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = {
+                    email: formData.get('email'),
+                    username: formData.get('username'),
+                    password: formData.get('password'),
+                    password2: formData.get('password2')
+                };
+
+                if (data.password !== data.password2) {
+                    document.getElementById('errorMessage').textContent = 'Passwords do not match';
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_URL}/register/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(JSON.stringify(error));
+                    }
+
+                    document.getElementById('successMessage').textContent = 'Registration successful! Redirecting to login...';
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 2000);
+                } catch (error) {
+                    document.getElementById('errorMessage').textContent = 'Registration failed. Username may already exist.';
+                }
+            });
+        }
+
+        // Check if already logged in
+        if (localStorage.getItem('authToken')) {
+            window.location.href = '/';
+        }
+    </script>
+</body>
+</html>
