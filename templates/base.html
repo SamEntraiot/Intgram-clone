@@ -1036,6 +1036,10 @@
                 <i class="far fa-user-circle"></i>
                 <span>Profile</span>
             </a>
+            <a href="#" onclick="logout(); return false;" class="nav-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
         </nav>
     </aside>
 
@@ -1182,9 +1186,6 @@
 
             <!-- Bottom Action Buttons -->
             <div class="story-action-bar">
-                <button class="story-action-circle" onclick="openShareStory()" title="Share">
-                    <i class="far fa-paper-plane"></i>
-                </button>
                 <button class="story-action-circle" id="storyMoreBtn" onclick="toggleStoryMenu()" title="More">
                     <i class="fas fa-ellipsis-h"></i>
                 </button>
@@ -2265,9 +2266,6 @@
             }
         }
 
-        function openShareStory() {
-            alert('Share story - Feature coming soon!');
-        }
 
         async function downloadStory() {
             if (!currentUserStories || currentStoryIndex >= currentUserStories.length) return;
@@ -2487,6 +2485,16 @@
             // Hide floating button if not logged in
             const floatingBtn = document.getElementById('floatingMessagesBtn');
             if (floatingBtn) floatingBtn.style.display = 'none';
+        }
+
+        // Logout function
+        function logout() {
+            // Clear tokens from localStorage
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('refreshToken');
+            
+            // Redirect to login page
+            window.location.href = '/login';
         }
 
         // Initialize authentication state (for OAuth users)

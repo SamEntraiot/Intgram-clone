@@ -12,6 +12,11 @@ def login_view(request):
     return render(request, 'login.html')
 
 
+def register_view(request):
+    """Render the registration page"""
+    return render(request, 'register.html')
+
+
 def profile_view(request, username=None):
     """Render the profile page"""
     return render(request, 'profile.html', {'username': username})
@@ -40,3 +45,13 @@ def post_detail_view(request, post_id):
 def reset_password_view(request, uid, token):
     """Render the password reset confirmation page"""
     return render(request, 'reset_password.html', {'uid': uid, 'token': token})
+
+
+def oauth_complete_view(request):
+    """Render the OAuth completion page which swaps session for JWT tokens."""
+    return render(request, 'oauth_complete.html')
+
+
+def social_signup_redirect(request):
+    """Redirect social signup directly to oauth complete"""
+    return redirect('/oauth-complete')

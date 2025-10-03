@@ -148,7 +148,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -174,6 +178,12 @@ REST_FRAMEWORK = {
 
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
+CORS_ALLOW_CREDENTIALS = True  # Allow cookies/session to be sent
+
+# Session Settings
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
 
 # JWT Settings
 from datetime import timedelta
@@ -192,8 +202,26 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_LOGIN_METHODS = {'username', 'email'}  # Allow login with username or email
 ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']  # Required signup fields
 ACCOUNT_EMAIL_VERIFICATION = 'optional'
-ACCOUNT_UNIQUE_EMAIL = True
-LOGIN_REDIRECT_URL = '/'
+ACCOUNT_USERNAME_MIN_LENGTH = 3
+ACCOUNT_PASSWORD_MIN_LENGTH = 8
+LOGIN_REDIRECT_URL = '/oauth-complete'
+LOGOUT_REDIRECT_URL = '/login'
+
+# Social account settings - auto-create accounts for Google users
+SOCIALACCOUNT_AUTO_SIGNUP = True  # Automatically create account for social logins
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'  # Skip email verification for social accounts
+SOCIALACCOUNT_LOGIN_ON_GET = True  # Allow login via GET request
+SOCIALACCOUNT_ADAPTER = 'accounts.adapters.CustomSocialAccountAdapter'  # Custom adapter for username generation
+ACCOUNT_ADAPTER = 'accounts.adapters.CustomAccountAdapter'  # Custom account adapter
+
+# Additional settings to bypass signup form completely
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_STORE_TOKENS = False
+
+# Force skip signup form for social accounts
+SOCIALACCOUNT_FORMS = {
+    'signup': None,  # Skip signup form completely
+}
 
 # Social account providers
 SOCIALACCOUNT_PROVIDERS = {
@@ -209,7 +237,9 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
         'AUTH_PARAMS': {
             'access_type': 'online',
-        }
+        },
+        'VERIFIED_EMAIL': True,  # Trust Google's email verification
+        'VERSION': 'v2'  # Use Google OAuth v2
     }
 }
 

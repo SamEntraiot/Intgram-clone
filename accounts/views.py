@@ -1,7 +1,9 @@
 from rest_framework import generics, status, permissions
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
@@ -16,11 +18,13 @@ from .serializers import (
 )
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class RegisterView(generics.CreateAPIView):
     """User registration endpoint"""
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
+    authentication_classes = []  # Remove session authentication for this view
 
 
 class MyProfileView(generics.RetrieveUpdateAPIView):
@@ -324,50 +328,82 @@ def create_conversation(request):
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+@csrf_exempt
 @api_view(['POST'])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def password_reset_request(request):
-    """Request password reset via email"""
-    email = request.data.get('email')
+    """Validate username for password reset"""
+    username = request.data.get('username')
     
-    if not email:
+    if not username:
         return Response(
-            {'error': 'Email is required'},
+            {'error': 'Username is required'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
     try:
-        user = User.objects.get(email=email)
-        
-        # Generate password reset token
-        token = default_token_generator.make_token(user)
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        
-        # Create reset link
-        reset_link = f"{settings.FRONTEND_URL or 'http://localhost:8000'}/reset-password/{uid}/{token}/"
-        
-        # Send email
-        send_mail(
-            subject='Password Reset Request',
-            message=f'Click the link below to reset your password:\n\n{reset_link}\n\nThis link will expire in 24 hours.',
-            from_email=settings.DEFAULT_FROM_EMAIL or 'noreply@instagram-clone.com',
-            recipient_list=[email],
-            fail_silently=False,
-        )
-        
-        return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
+        user = User.objects.get(username=username)
+        return Response({
+            'message': 'Username found',
+            'username': username,
+            'show_password_fields': True
+        }, status=status.HTTP_200_OK)
     
     except User.DoesNotExist:
-        # Don't reveal if email exists for security
-        return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
-    except Exception as e:
         return Response(
-            {'error': 'Failed to send reset email'},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            {'error': 'Username not found'},
+            status=status.HTTP_404_NOT_FOUND
         )
 
 
+@csrf_exempt
 @api_view(['POST'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def password_reset_direct(request):
+    """Reset password directly with username and new password"""
+    username = request.data.get('username')
+    new_password = request.data.get('new_password')
+    confirm_password = request.data.get('confirm_password')
+    
+    if not all([username, new_password, confirm_password]):
+        return Response(
+            {'error': 'Username, new password, and confirm password are required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    if new_password != confirm_password:
+        return Response(
+            {'error': 'Passwords do not match'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    if len(new_password) < 8:
+        return Response(
+            {'error': 'Password must be at least 8 characters long'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        user = User.objects.get(username=username)
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({
+            'message': 'Password reset successful! You can now login with your new password.'
+        }, status=status.HTTP_200_OK)
+    
+    except User.DoesNotExist:
+        return Response(
+            {'error': 'Username not found'},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([])
 @permission_classes([AllowAny])
 def password_reset_confirm(request):
     """Confirm password reset with token"""
@@ -406,15 +442,67 @@ def password_reset_confirm(request):
         )
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 def get_jwt_token(request):
-    """Get JWT token for currently authenticated user (for OAuth users)"""
+    """Get JWT token for currently authenticated user (for OAuth users).
+    
+    This endpoint works with session authentication after OAuth login.
+    If the user is not authenticated via session, it will return an error.
+    """
     from rest_framework_simplejwt.tokens import RefreshToken
+    from django.contrib.auth import authenticate
+    
+    # Check if user is authenticated via session
+    if request.user and request.user.is_authenticated:
+        refresh = RefreshToken.for_user(request.user)
+        return Response({
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': {
+                'id': request.user.id,
+                'username': request.user.username,
+                'email': request.user.email,
+            }
+        })
+    
+    # If not authenticated via session, check if there's a temporary auth token
+    temp_token = request.GET.get('temp_token') or request.data.get('temp_token')
+    if temp_token:
+        # Verify temporary token and get user
+        try:
+            from django.core.signing import Signer
+            signer = Signer()
+            user_id = signer.unsign(temp_token)
+            user = User.objects.get(id=user_id)
+            
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'user': {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                }
+            })
+        except Exception:
+            pass
+    
+    return Response(
+        {'error': 'User not authenticated. Please login again.'}, 
+        status=status.HTTP_401_UNAUTHORIZED
+    )
 
-    refresh = RefreshToken.for_user(request.user)
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def debug_auth_status(request):
+    """Debug endpoint to check authentication status"""
     return Response({
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
+        'is_authenticated': request.user.is_authenticated,
+        'user_id': request.user.id if request.user.is_authenticated else None,
+        'username': request.user.username if request.user.is_authenticated else None,
+        'session_key': request.session.session_key,
+        'has_session': bool(request.session.session_key),
     })

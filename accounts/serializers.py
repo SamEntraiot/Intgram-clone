@@ -47,8 +47,6 @@ class ProfileSerializer(serializers.ModelSerializer):
         return {
             'id': obj.user.id,
             'username': obj.user.username,
-            'first_name': obj.user.first_name,
-            'last_name': obj.user.last_name,
             'email': obj.user.email
         }
     
@@ -57,6 +55,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return obj in request.user.profile.following.all()
         return False
+    
 
 
 class NotificationSerializer(serializers.ModelSerializer):
@@ -135,16 +134,32 @@ class ConversationSerializer(serializers.ModelSerializer):
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
-    password2 = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'}, min_length=8)
+    password2 = serializers.CharField(write_only=True, style={'input_type': 'password'}, min_length=8)
     
     class Meta:
         model = User
         fields = ('username', 'email', 'password', 'password2', 'first_name', 'last_name')
     
+    def validate_username(self, value):
+        if len(value) < 3:
+            raise serializers.ValidationError("Username must be at least 3 characters long")
+        
+        # Check if username already exists (must be unique)
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("A user with this username already exists")
+        
+        return value
+    
+    def validate_email(self, value):
+        # Allow multiple accounts with the same email (like real Instagram)
+        return value
+    
     def validate(self, data):
         if data['password'] != data['password2']:
             raise serializers.ValidationError("Passwords don't match")
+        if len(data['password']) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long")
         return data
     
     def create(self, validated_data):

@@ -8,6 +8,7 @@ urlpatterns = [
     path('login/', TokenObtainPairView.as_view(), name='login'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('auth/get-jwt-token/', views.get_jwt_token, name='get-jwt-token'),
+    path('auth/debug/', views.debug_auth_status, name='debug-auth-status'),
     
     # Profile
     path('profile/me/', views.MyProfileView.as_view(), name='my-profile'),
@@ -27,6 +28,7 @@ urlpatterns = [
     
     # Password Reset
     path('password-reset/', views.password_reset_request, name='password-reset-request'),
+    path('password-reset-direct/', views.password_reset_direct, name='password-reset-direct'),
     path('password-reset-confirm/', views.password_reset_confirm, name='password-reset-confirm'),
     
     # Conversations & Messages
