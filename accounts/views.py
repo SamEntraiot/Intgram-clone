@@ -4,6 +4,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
+from django.conf import settings
 from .models import Profile, Notification, Conversation, Message
 from .serializers import (
     ProfileSerializer, UserSerializer, NotificationSerializer,
@@ -25,6 +30,11 @@ class MyProfileView(generics.RetrieveUpdateAPIView):
     
     def get_object(self):
         return self.request.user.profile
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 
 class ProfileDetailView(generics.RetrieveAPIView):
@@ -36,6 +46,11 @@ class ProfileDetailView(generics.RetrieveAPIView):
     
     def get_queryset(self):
         return Profile.objects.select_related('user').prefetch_related('following', 'followers')
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
 
 @api_view(['POST'])
@@ -55,6 +70,12 @@ def follow_user(request, username):
     
     if target_profile in profile.following.all():
         profile.following.remove(target_profile)
+        # Delete follow notification when unfollowing
+        Notification.objects.filter(
+            recipient=target_user,
+            actor=request.user,
+            verb='follow'
+        ).delete()
         return Response({'status': 'unfollowed'}, status=status.HTTP_200_OK)
     else:
         profile.following.add(target_profile)
@@ -65,6 +86,38 @@ def follow_user(request, username):
             verb='follow'
         )
         return Response({'status': 'followed'}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def remove_follower(request, username):
+    """Remove a follower from your followers list"""
+    follower_user = get_object_or_404(User, username=username)
+    
+    if follower_user == request.user:
+        return Response(
+            {'error': 'Invalid operation'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    # Remove the follower by removing yourself from their following list
+    follower_profile = follower_user.profile
+    current_profile = request.user.profile
+    
+    if current_profile in follower_profile.following.all():
+        follower_profile.following.remove(current_profile)
+        # Delete follow notification
+        Notification.objects.filter(
+            recipient=request.user,
+            actor=follower_user,
+            verb='follow'
+        ).delete()
+        return Response({'status': 'removed'}, status=status.HTTP_200_OK)
+    else:
+        return Response(
+            {'error': 'User is not following you'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 @api_view(['GET'])
@@ -179,6 +232,9 @@ class ConversationListView(generics.ListAPIView):
     
     def get_queryset(self):
         return Conversation.objects.filter(participants=self.request.user)
+    
+    def get_serializer_context(self):
+        return {'request': self.request}
 
 
 class ConversationDetailView(generics.RetrieveAPIView):
@@ -188,6 +244,9 @@ class ConversationDetailView(generics.RetrieveAPIView):
     
     def get_queryset(self):
         return Conversation.objects.filter(participants=self.request.user)
+    
+    def get_serializer_context(self):
+        return {'request': self.request}
 
 
 class MessageListView(generics.ListCreateAPIView):
@@ -198,6 +257,19 @@ class MessageListView(generics.ListCreateAPIView):
     def get_queryset(self):
         conversation_id = self.kwargs.get('conversation_id')
         return Message.objects.filter(conversation_id=conversation_id)
+    
+    def list(self, request, *args, **kwargs):
+        """Override list to mark messages as read when fetched"""
+        response = super().list(request, *args, **kwargs)
+        
+        # Mark all unread messages in this conversation as read
+        conversation_id = self.kwargs.get('conversation_id')
+        Message.objects.filter(
+            conversation_id=conversation_id,
+            is_read=False
+        ).exclude(sender=request.user).update(is_read=True)
+        
+        return response
     
     def perform_create(self, serializer):
         conversation_id = self.kwargs.get('conversation_id')
@@ -241,12 +313,94 @@ def create_conversation(request):
     ).filter(participants=other_user).first()
     
     if existing:
-        serializer = ConversationSerializer(existing)
+        serializer = ConversationSerializer(existing, context={'request': request})
         return Response(serializer.data)
     
     # Create new conversation
     conversation = Conversation.objects.create()
     conversation.participants.add(request.user, other_user)
     
-    serializer = ConversationSerializer(conversation)
+    serializer = ConversationSerializer(conversation, context={'request': request})
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def password_reset_request(request):
+    """Request password reset via email"""
+    email = request.data.get('email')
+    
+    if not email:
+        return Response(
+            {'error': 'Email is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        user = User.objects.get(email=email)
+        
+        # Generate password reset token
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        
+        # Create reset link
+        reset_link = f"{settings.FRONTEND_URL or 'http://localhost:8000'}/reset-password/{uid}/{token}/"
+        
+        # Send email
+        send_mail(
+            subject='Password Reset Request',
+            message=f'Click the link below to reset your password:\n\n{reset_link}\n\nThis link will expire in 24 hours.',
+            from_email=settings.DEFAULT_FROM_EMAIL or 'noreply@instagram-clone.com',
+            recipient_list=[email],
+            fail_silently=False,
+        )
+        
+        return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
+    
+    except User.DoesNotExist:
+        # Don't reveal if email exists for security
+        return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response(
+            {'error': 'Failed to send reset email'},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def password_reset_confirm(request):
+    """Confirm password reset with token"""
+    uidb64 = request.data.get('uid')
+    token = request.data.get('token')
+    new_password = request.data.get('new_password')
+    
+    if not all([uidb64, token, new_password]):
+        return Response(
+            {'error': 'Missing required fields'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+    try:
+        # Decode user ID
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+        
+        # Verify token
+        if not default_token_generator.check_token(user, token):
+            return Response(
+                {'error': 'Invalid or expired token'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Set new password
+        user.set_password(new_password)
+        user.save()
+        
+        return Response({'message': 'Password reset successful'}, status=status.HTTP_200_OK)
+    
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return Response(
+            {'error': 'Invalid reset link'},
+            status=status.HTTP_400_BAD_REQUEST
+        )

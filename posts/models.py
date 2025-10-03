@@ -6,7 +6,8 @@ from datetime import timedelta
 
 class Post(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
-    image = models.ImageField(upload_to='posts/')
+    image = models.ImageField(upload_to='posts/', blank=True, null=True)
+    video = models.FileField(upload_to='posts/', blank=True, null=True)
     caption = models.TextField(max_length=2200, blank=True)
     likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -74,3 +75,16 @@ class StoryView(models.Model):
     
     def __str__(self):
         return f"{self.viewer.username} viewed {self.story.user.username}'s story"
+
+
+class SavedPost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_posts')
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='saved_by')
+    saved_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('user', 'post')
+        ordering = ['-saved_at']
+    
+    def __str__(self):
+        return f"{self.user.username} saved {self.post.id}"

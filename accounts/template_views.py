@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 
 
@@ -28,10 +28,15 @@ def messages_view(request):
 
 
 def notifications_view(request):
-    """Render the notifications page"""
-    return render(request, 'notifications.html')
+    """Redirect to home page - notifications now work as a side panel"""
+    return redirect('/')
 
 
 def post_detail_view(request, post_id):
     """Render the post detail page"""
     return render(request, 'post_detail.html', {'post_id': post_id})
+
+
+def reset_password_view(request, uid, token):
+    """Render the password reset confirmation page"""
+    return render(request, 'reset_password.html', {'uid': uid, 'token': token})

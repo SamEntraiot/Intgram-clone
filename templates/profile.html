@@ -23,9 +23,29 @@
         margin-bottom: 16px;
     }
 
-    .profile-avatar {
+    .profile-avatar-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+
+    .profile-avatar-ring {
         width: 150px;
         height: 150px;
+        border-radius: 50%;
+        padding: 3px;
+        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        cursor: pointer;
+        display: inline-block;
+    }
+
+    .profile-avatar-ring.no-story {
+        background: transparent;
+        padding: 0;
+    }
+
+    .profile-avatar {
+        width: 100%;
+        height: 100%;
         border-radius: 50%;
         object-fit: cover;
         cursor: pointer;
@@ -34,6 +54,7 @@
         align-items: center;
         justify-content: center;
         position: relative;
+        border: 3px solid var(--primary-bg);
     }
 
     .profile-avatar img {
@@ -161,6 +182,70 @@
         font-size: 12px;
         font-weight: 600;
         color: var(--text-primary);
+    }
+
+    .add-story-btn {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--link-color);
+        color: white;
+        border: 3px solid var(--primary-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        transition: transform 0.2s;
+    }
+
+    .add-story-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .story-highlight-section {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin: 20px 0;
+        flex-wrap: wrap;
+    }
+
+    .highlight-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+        min-width: 77px;
+    }
+
+    .highlight-ring {
+        width: 77px;
+        height: 77px;
+        border-radius: 50%;
+        border: 2px solid var(--border-color);
+        padding: 2px;
+        margin-bottom: 4px;
+    }
+
+    .highlight-ring img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .highlight-label {
+        font-size: 12px;
+        max-width: 77px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: center;
     }
 
     /* Posts Grid */
@@ -375,6 +460,162 @@
         opacity: 0.7;
     }
 
+    .suggestions-header {
+        padding: 16px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        border-top: 1px solid var(--border-color);
+    }
+
+    .user-list-subtitle {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-top: 2px;
+    }
+
+    /* Post Detail Modal Styles */
+    .post-nav-btn {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        z-index: 10;
+        transition: all 0.2s;
+    }
+
+    .post-nav-btn:hover {
+        background: white;
+        transform: scale(1.1);
+    }
+
+    .post-nav-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Post Options Menu */
+    .post-options-btn {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        cursor: pointer;
+        font-size: 24px;
+        padding: 8px 12px;
+        color: var(--text-primary);
+        z-index: 11;
+        transition: all 0.2s;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .post-options-btn:hover {
+        transform: scale(1.1);
+        background: white;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .post-options-btn:active {
+        transform: scale(0.95);
+    }
+
+    .post-options-menu {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        min-width: 400px;
+        max-width: 400px;
+        z-index: 3000;  /* Higher than modal (2000) */
+        overflow: hidden;
+        display: none;
+        animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .post-options-menu.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -48%);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%);
+        }
+    }
+
+    .post-option-item {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border-color);
+        text-align: center;
+        cursor: pointer;
+        font-size: 14px;
+        background: white;
+        transition: background-color 0.2s;
+    }
+
+    .post-option-item:last-child {
+        border-bottom: none;
+    }
+
+    .post-option-item:hover {
+        background-color: var(--secondary-bg);
+    }
+
+    .post-option-item.danger {
+        color: #ed4956;
+        font-weight: 700;
+    }
+
+    .post-option-item.cancel {
+        border-top: 6px solid var(--border-color);
+    }
+
+    .post-options-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.4);  /* Slightly lighter overlay */
+        z-index: 2500;  /* Higher than modal but lower than menu */
+        display: none;
+        animation: overlayFadeIn 0.2s ease-in-out;
+    }
+
+    .post-options-overlay.active {
+        display: block;
+    }
+
+    @keyframes overlayFadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
     @media (max-width: 768px) {
         .profile-container {
             padding: 20px 0;
@@ -382,6 +623,29 @@
 
         .profile-header {
             padding: 20px 16px 32px;
+        }
+        
+        /* Make post modal responsive on mobile */
+        #postDetailModal .modal-content {
+            max-width: 95vw;
+            max-height: 95vh;
+        }
+        
+        .post-nav-btn {
+            width: 32px;
+            height: 32px;
+            font-size: 16px;
+        }
+        
+        .post-options-menu {
+            min-width: 90vw;
+            max-width: 90vw;
+        }
+        
+        .post-options-btn {
+            font-size: 20px;
+            top: 12px;
+            right: 12px;
         }
 
         .profile-avatar {
@@ -451,7 +715,7 @@
         <div class="modal-body">
             <form id="editProfileForm">
                 <div class="avatar-upload">
-                    <img id="avatarPreview" src="https://via.placeholder.com/100" alt="Avatar">
+                    <img id="avatarPreview" src="" alt="Avatar">
                     <label for="avatarInput">Change Profile Photo</label>
                     <input type="file" id="avatarInput" name="avatar" accept="image/*">
                 </div>
@@ -477,6 +741,60 @@
             <button class="close-modal" onclick="closeModal('postDetailModal')">&times;</button>
         </div>
         <div class="modal-body" id="postDetailContent">
+        </div>
+    </div>
+</div>
+
+<!-- Post Options Menu -->
+<div class="post-options-overlay" id="postOptionsOverlay" onclick="closePostOptionsMenu()"></div>
+<div class="post-options-menu" id="postOptionsMenu">
+    <div class="post-option-item danger" onclick="deletePost()">Delete</div>
+    <div class="post-option-item" onclick="editPost()">Edit</div>
+    <div class="post-option-item" onclick="hideLikeCount()">Hide like count to others</div>
+    <div class="post-option-item" onclick="turnOffCommenting()">Turn off commenting</div>
+    <div class="post-option-item" onclick="goToPostPage()">Go to post</div>
+    <div class="post-option-item" onclick="sharePost()">Share to...</div>
+    <div class="post-option-item" onclick="copyPostLink()">Copy link</div>
+    <div class="post-option-item" onclick="embedPost()">Embed</div>
+    <div class="post-option-item" onclick="aboutThisAccount()">About this account</div>
+    <div class="post-option-item cancel" onclick="closePostOptionsMenu()">Cancel</div>
+</div>
+
+<!-- Share Post Modal -->
+<div id="shareModal" class="modal">
+    <div class="modal-content" style="max-width: 550px; padding: 0;">
+        <div class="modal-header" style="padding: 16px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="font-size: 16px; font-weight: 600;">Share</h3>
+            <button class="close-modal" onclick="closeModal('shareModal')">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 0;">
+            <!-- Selected users chips -->
+            <div id="selectedUsersChips" style="padding: 12px 16px; border-bottom: 1px solid var(--border-color); display: none; flex-wrap: wrap; gap: 8px; align-items: center;">
+                <span style="font-weight: 600; font-size: 14px; color: var(--text-secondary);">To:</span>
+            </div>
+            
+            <!-- Search bar -->
+            <div class="messages-search" style="padding: 16px; border-bottom: 1px solid var(--border-color);">
+                <input type="text" id="shareSearchInput" placeholder="Search..." 
+                       style="width: 100%; padding: 8px 16px; background: var(--secondary-bg); border: none; border-radius: 8px; font-size: 14px;"
+                       oninput="filterShareUsers(this.value)">
+            </div>
+            
+            <!-- Users list -->
+            <div id="shareUsersList" style="padding: 8px 0; max-height: 300px; overflow-y: auto;">
+                <div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                    Loading users...
+                </div>
+            </div>
+            
+            <!-- Message input and send button -->
+            <div id="shareMessageSection" style="padding: 16px; border-top: 1px solid var(--border-color); display: none;">
+                <textarea id="shareMessageInput" placeholder="Write a message..." 
+                          style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; font-family: inherit; resize: none; min-height: 60px; margin-bottom: 12px;"></textarea>
+                <button onclick="sendSharedPost()" style="width: 100%; padding: 12px; background: var(--link-color); color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer;">
+                    Send
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -521,12 +839,16 @@
 
 <!-- Followers Modal -->
 <div id="followersModal" class="modal">
-    <div class="modal-content" style="max-width: 400px; border-radius: 12px; max-height: 400px;">
+    <div class="modal-content" style="max-width: 400px; border-radius: 12px; max-height: 500px;">
         <div class="modal-header" style="border-bottom: 1px solid var(--border-color); padding: 8px 16px;">
             <h3 style="font-size: 16px; font-weight: 600; text-align: center;">Followers</h3>
             <button class="close-modal" onclick="closeModal('followersModal')">&times;</button>
         </div>
-        <div class="modal-body" style="padding: 8px 0; max-height: 300px; overflow-y: auto;">
+        <div style="padding: 8px 16px; border-bottom: 1px solid var(--border-color);">
+            <input type="text" id="followersSearch" placeholder="Search" 
+                   style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--secondary-bg); outline: none;">
+        </div>
+        <div class="modal-body" style="padding: 8px 0; max-height: 350px; overflow-y: auto;">
             <div id="followersListContainer">
                 <div class="loading">Loading...</div>
             </div>
@@ -536,15 +858,68 @@
 
 <!-- Following Modal -->
 <div id="followingModal" class="modal">
-    <div class="modal-content" style="max-width: 400px; border-radius: 12px; max-height: 400px;">
+    <div class="modal-content" style="max-width: 400px; border-radius: 12px; max-height: 500px;">
         <div class="modal-header" style="border-bottom: 1px solid var(--border-color); padding: 8px 16px;">
             <h3 style="font-size: 16px; font-weight: 600; text-align: center;">Following</h3>
             <button class="close-modal" onclick="closeModal('followingModal')">&times;</button>
         </div>
-        <div class="modal-body" style="padding: 8px 0; max-height: 300px; overflow-y: auto;">
+        <div style="padding: 8px 16px; border-bottom: 1px solid var(--border-color);">
+            <input type="text" id="followingSearch" placeholder="Search" 
+                   style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--secondary-bg); outline: none;">
+        </div>
+        <div class="modal-body" style="padding: 8px 0; max-height: 350px; overflow-y: auto;">
             <div id="followingListContainer">
                 <div class="loading">Loading...</div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Unfollow Confirmation Modal -->
+<div id="unfollowModal" class="modal">
+    <div class="modal-content" style="max-width: 400px; border-radius: 12px; text-align: center; padding: 32px 16px;">
+        <img id="unfollowUserAvatar" src="" alt="" style="width: 90px; height: 90px; border-radius: 50%; margin-bottom: 20px; object-fit: cover;">
+        <p id="unfollowMessage" style="font-size: 14px; color: var(--text-primary); margin-bottom: 24px;"></p>
+        <button class="settings-option" onclick="confirmUnfollow()" style="width: 100%; color: #ed4956; font-weight: 700; border-bottom: 1px solid var(--border-color); padding: 14px;">Unfollow</button>
+        <button class="settings-option" onclick="closeModal('unfollowModal')" style="width: 100%; padding: 14px;">Cancel</button>
+    </div>
+</div>
+
+<!-- Add Story Modal -->
+<div id="addStoryModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3>Create Story</h3>
+            <button class="close-modal" onclick="closeModal('addStoryModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="addStoryForm">
+                <div class="form-group">
+                    <label>Upload Image</label>
+                    <input type="file" id="storyImageInput" name="image" accept="image/*" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px;">
+                </div>
+                <div id="storyPreviewContainer" style="margin: 16px 0; text-align: center; display: none;">
+                    <img id="storyPreview" src="" alt="Story preview" style="max-width: 100%; max-height: 300px; border-radius: 8px;">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Share Story</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- View Story Modal -->
+<div id="viewStoryModal" class="modal" style="background: rgba(0, 0, 0, 0.9);">
+    <div class="modal-content" style="max-width: 500px; background: transparent; box-shadow: none; position: relative;">
+        <button class="close-modal" onclick="closeModal('viewStoryModal')" style="position: absolute; top: 20px; right: 20px; z-index: 10; background: rgba(255,255,255,0.3); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 24px; cursor: pointer;">&times;</button>
+        <div id="storyViewContent" style="text-align: center;">
+            <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px; padding: 16px; background: rgba(0,0,0,0.5); border-radius: 8px;">
+                <img id="storyViewerAvatar" src="" alt="" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid white;">
+                <div style="flex: 1; text-align: left;">
+                    <div id="storyViewerUsername" style="color: white; font-weight: 600; font-size: 14px;"></div>
+                    <div id="storyViewerTime" style="color: rgba(255,255,255,0.7); font-size: 12px;"></div>
+                </div>
+            </div>
+            <img id="storyViewImage" src="" alt="Story" style="max-width: 100%; max-height: 70vh; border-radius: 8px;">
         </div>
     </div>
 </div>
@@ -573,20 +948,30 @@
         }
     }
 
+    let userStories = [];
+    let hasActiveStory = false;
+
     function renderProfile(profile) {
         const isOwnProfile = !username || username === 'me' || username === 'profile';
-        const hasAvatar = profile.avatar && profile.avatar !== 'https://via.placeholder.com/150';
+        const hasAvatar = profile.avatar && profile.avatar !== getDefaultAvatar(150);
         
         const html = `
             <div class="profile-header">
                 <div class="profile-avatar-section">
                     <div class="profile-note">Note...</div>
-                    <div class="profile-avatar" ${isOwnProfile ? 'onclick="openEditModal()"' : ''}>
-                        ${hasAvatar ? `
-                            <img src="${profile.avatar}" alt="${profile.username}">
-                        ` : `
-                            <i class="fas fa-camera camera-icon"></i>
-                        `}
+                    <div class="profile-avatar-wrapper">
+                        <div class="profile-avatar-ring ${hasActiveStory ? '' : 'no-story'}" onclick="${hasActiveStory ? 'viewProfileStory()' : (isOwnProfile ? 'openEditModal()' : '')}">
+                            <div class="profile-avatar">
+                                ${hasAvatar ? `
+                                    <img src="${profile.avatar}" alt="${profile.username}">
+                                ` : `
+                                    <i class="fas fa-camera camera-icon"></i>
+                                `}
+                            </div>
+                        </div>
+                        ${isOwnProfile ? `
+                            <button class="add-story-btn" onclick="openAddStoryModal()" title="Add Story">+</button>
+                        ` : ''}
                     </div>
                 </div>
                 
@@ -667,9 +1052,15 @@
                 return;
             }
 
+            // Store all posts for navigation
+            allUserPosts = posts;
+            
             grid.innerHTML = posts.map(post => `
                 <div class="post-thumbnail" onclick="showPostDetail(${post.id})">
-                    <img src="${post.image}" alt="Post">
+                    ${post.video ? 
+                        `<video src="${post.video}" style="width: 100%; height: 100%; object-fit: cover;"></video>` :
+                        `<img src="${post.image}" alt="Post">`
+                    }
                     <div class="post-overlay">
                         <span><i class="fas fa-heart"></i> ${post.likes_count}</span>
                         <span><i class="fas fa-comment"></i> ${post.comments_count}</span>
@@ -686,7 +1077,9 @@
     function openEditModal() {
         document.getElementById('bioInput').value = currentProfile.bio || '';
         document.getElementById('websiteInput').value = currentProfile.website || '';
-        document.getElementById('avatarPreview').src = currentProfile.avatar || 'https://via.placeholder.com/100';
+        const avatarPreview = document.getElementById('avatarPreview');
+        avatarPreview.src = safeImageSrc(currentProfile.avatar, 100);
+        avatarPreview.onerror = function() { this.src = getDefaultAvatar(100); };
         document.getElementById('editProfileModal').classList.add('active');
     }
 
@@ -750,23 +1143,68 @@
         }
     }
 
+    let allUserPosts = [];
+    let currentPostIndex = 0;
+
     async function showPostDetail(postId) {
         try {
-            const post = await apiCall(`/posts/${postId}/`);
+            // Find the index of clicked post
+            currentPostIndex = allUserPosts.findIndex(p => p.id === postId);
+            if (currentPostIndex === -1) currentPostIndex = 0;
+            
+            await renderPostDetail();
+        } catch (error) {
+            console.error('Error loading post:', error);
+        }
+    }
+
+    async function renderPostDetail() {
+        try {
+            const post = allUserPosts[currentPostIndex];
+            if (!post) return;
+            
+            // Fetch full post details
+            const fullPost = await apiCall(`/posts/${post.id}/`);
+            
+            const hasPrev = currentPostIndex > 0;
+            const hasNext = currentPostIndex < allUserPosts.length - 1;
             
             const html = `
-                <div style="display: flex; gap: 20px;">
-                    <img src="${post.image}" style="max-width: 500px; width: 100%; object-fit: contain;">
-                    <div style="flex: 1;">
+                <div style="display: flex; gap: 20px; position: relative;">
+                    <!-- Three dots menu button -->
+                    <button onclick="openPostOptionsMenu(${fullPost.id})" class="post-options-btn">
+                        <i class="fas fa-ellipsis-h"></i>
+                    </button>
+                    
+                    ${hasPrev ? `
+                        <button onclick="navigateToPreviousPost()" class="post-nav-btn" style="left: 10px; top: 50%; transform: translateY(-50%);">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                    ` : ''}
+                    
+                    ${hasNext ? `
+                        <button onclick="navigateToNextPost()" class="post-nav-btn" style="right: 10px; top: 50%; transform: translateY(-50%);">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    ` : ''}
+                    
+                    <div style="flex: 1; max-width: 600px; cursor: pointer;" onclick="${hasNext ? 'navigateToNextPost()' : ''}">
+                        ${fullPost.video ? 
+                            `<video src="${fullPost.video}" controls style="width: 100%; height: auto; object-fit: contain;"></video>` :
+                            `<img src="${fullPost.image}" style="width: 100%; height: auto; object-fit: contain;">`
+                        }
+                    </div>
+                    
+                    <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
                         <div style="display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
-                            <img src="${post.author_avatar || 'https://via.placeholder.com/32'}" 
+                            <img src="${fullPost.author_avatar || getDefaultAvatar(32)}" 
                                  style="width: 32px; height: 32px; border-radius: 50%;">
-                            <strong>${post.author_username}</strong>
+                            <strong>${fullPost.author_username}</strong>
                         </div>
-                        <div style="padding: 16px 0;">
-                            ${post.caption ? `<p><strong>${post.author_username}</strong> ${post.caption}</p>` : ''}
+                        <div style="padding: 16px 0; flex: 1; overflow-y: auto;">
+                            ${fullPost.caption ? `<p><strong>${fullPost.author_username}</strong> ${fullPost.caption}</p>` : ''}
                             <div style="margin-top: 16px;">
-                                ${post.comments.map(c => `
+                                ${fullPost.comments.map(c => `
                                     <p style="margin: 8px 0;">
                                         <strong>${c.author_username}</strong> ${c.text}
                                     </p>
@@ -774,8 +1212,25 @@
                             </div>
                         </div>
                         <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                            <p style="color: var(--text-secondary); font-size: 12px; margin-bottom: 8px;">
-                                ${post.likes_count} likes
+                            <div style="display: flex; gap: 16px; margin-bottom: 12px; align-items: center;">
+                                <button onclick="toggleLikeInModal(${fullPost.id}, this)" style="background: none; border: none; cursor: pointer; font-size: 24px;">
+                                    <i class="${fullPost.is_liked ? 'fas' : 'far'} fa-heart" style="color: ${fullPost.is_liked ? '#ed4956' : 'inherit'}"></i>
+                                </button>
+                                <button style="background: none; border: none; cursor: pointer; font-size: 24px;">
+                                    <i class="far fa-comment"></i>
+                                </button>
+                                <button onclick="openShareModal(${fullPost.id})" style="background: none; border: none; cursor: pointer; font-size: 24px;">
+                                    <i class="far fa-paper-plane"></i>
+                                </button>
+                                <button onclick="toggleSaveInModal(${fullPost.id}, this)" style="background: none; border: none; cursor: pointer; font-size: 24px; margin-left: auto;">
+                                    <i class="far fa-bookmark"></i>
+                                </button>
+                            </div>
+                            <p style="color: var(--text-primary); font-weight: 600; font-size: 14px; margin-bottom: 8px;">
+                                ${fullPost.likes_count} likes
+                            </p>
+                            <p style="color: var(--text-secondary); font-size: 10px; text-transform: uppercase;">
+                                ${formatDate(fullPost.created_at)}
                             </p>
                         </div>
                     </div>
@@ -785,7 +1240,388 @@
             document.getElementById('postDetailContent').innerHTML = html;
             document.getElementById('postDetailModal').classList.add('active');
         } catch (error) {
-            console.error('Error loading post:', error);
+            console.error('Error rendering post:', error);
+        }
+    }
+
+    function navigateToNextPost() {
+        if (currentPostIndex < allUserPosts.length - 1) {
+            currentPostIndex++;
+            renderPostDetail();
+        }
+    }
+
+    function navigateToPreviousPost() {
+        if (currentPostIndex > 0) {
+            currentPostIndex--;
+            renderPostDetail();
+        }
+    }
+
+    async function toggleLikeInModal(postId, button) {
+        try {
+            await apiCall(`/posts/${postId}/like/`, { method: 'POST' });
+            
+            // Reload the current post to get updated like status
+            const post = await apiCall(`/posts/${postId}/`);
+            
+            const icon = button.querySelector('i');
+            if (post.is_liked) {
+                icon.className = 'fas fa-heart';
+                icon.style.color = '#ed4956';
+            } else {
+                icon.className = 'far fa-heart';
+                icon.style.color = 'inherit';
+            }
+            
+            // Update like count
+            const likeCountText = button.closest('div').parentElement.querySelector('p');
+            likeCountText.textContent = `${post.likes_count} likes`;
+            
+            // Update in the posts array
+            allUserPosts[currentPostIndex] = post;
+        } catch (error) {
+            console.error('Error toggling like:', error);
+        }
+    }
+
+    async function toggleSaveInModal(postId, button) {
+        try {
+            const response = await apiCall(`/posts/${postId}/save/`, {
+                method: 'POST'
+            });
+            
+            const icon = button.querySelector('i');
+            if (response.saved) {
+                icon.className = 'fas fa-bookmark';
+            } else {
+                icon.className = 'far fa-bookmark';
+            }
+            
+            // Show feedback toast
+            const feedback = document.createElement('div');
+            feedback.style.cssText = 'position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 12px 20px; border-radius: 8px; z-index: 9999; font-size: 14px;';
+            feedback.textContent = response.saved ? 'Post saved' : 'Post removed from saved';
+            document.body.appendChild(feedback);
+            
+            setTimeout(() => feedback.remove(), 2000);
+        } catch (error) {
+            console.error('Error toggling save:', error);
+            alert('Failed to save post. Please try again.');
+        }
+    }
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = now - date;
+        
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (minutes < 1) return 'just now';
+        if (minutes < 60) return `${minutes} minutes ago`;
+        if (hours < 24) return `${hours} hours ago`;
+        if (days < 7) return `${days} days ago`;
+        
+        return date.toLocaleDateString();
+    }
+
+    // Keyboard navigation for post modal
+    document.addEventListener('keydown', (e) => {
+        const postModal = document.getElementById('postDetailModal');
+        if (!postModal || !postModal.classList.contains('active')) return;
+        
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            navigateToNextPost();
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            navigateToPreviousPost();
+        } else if (e.key === 'Escape') {
+            closeModal('postDetailModal');
+        }
+    });
+
+    // Post Options Menu Functions
+    let currentPostIdForMenu = null;
+
+    function openPostOptionsMenu(postId) {
+        currentPostIdForMenu = postId;
+        document.getElementById('postOptionsMenu').classList.add('active');
+        document.getElementById('postOptionsOverlay').classList.add('active');
+    }
+
+    function closePostOptionsMenu() {
+        document.getElementById('postOptionsMenu').classList.remove('active');
+        document.getElementById('postOptionsOverlay').classList.remove('active');
+    }
+
+    async function deletePost() {
+        // Close the menu first
+        closePostOptionsMenu();
+        
+        try {
+            console.log('Deleting post ID:', currentPostIdForMenu);
+            const result = await apiCall(`/posts/${currentPostIdForMenu}/`, { method: 'DELETE' });
+            console.log('Delete result:', result);
+            
+            // Close the post detail modal
+            closeModal('postDetailModal');
+            
+            // Reload posts grid
+            if (currentProfile) {
+                await loadUserPosts(currentProfile.username);
+            }
+        } catch (error) {
+            console.error('Error deleting post:', error);
+            console.error('Error details:', error.message, error.stack);
+            alert(`Failed to delete post: ${error.message}`);
+        }
+    }
+
+    function editPost() {
+        closePostOptionsMenu();
+        
+        // Get current post data
+        const post = allUserPosts.find(p => p.id === currentPostIdForMenu);
+        if (!post) {
+            alert('Post not found');
+            return;
+        }
+        
+        // Prompt for new caption
+        const newCaption = prompt('Edit caption:', post.caption || '');
+        
+        if (newCaption === null) {
+            // User cancelled
+            return;
+        }
+        
+        // Update caption via API
+        updatePostCaption(currentPostIdForMenu, newCaption);
+    }
+
+    async function updatePostCaption(postId, caption) {
+        try {
+            await apiCall(`/posts/${postId}/`, {
+                method: 'PATCH',
+                body: JSON.stringify({ caption })
+            });
+            
+            // Update in local data
+            const post = allUserPosts.find(p => p.id === postId);
+            if (post) {
+                post.caption = caption;
+            }
+            
+            // Refresh the post detail if open
+            if (document.getElementById('postDetailModal').classList.contains('active')) {
+                showPostDetail(postId);
+            }
+            
+            alert('Caption updated successfully!');
+        } catch (error) {
+            console.error('Error updating caption:', error);
+            alert('Failed to update caption. Please try again.');
+        }
+    }
+
+    function hideLikeCount() {
+        closePostOptionsMenu();
+        alert('Hide like count feature coming soon!');
+    }
+
+    function turnOffCommenting() {
+        closePostOptionsMenu();
+        alert('Turn off commenting feature coming soon!');
+    }
+
+    function goToPostPage() {
+        closePostOptionsMenu();
+        window.location.href = `/post/${currentPostIdForMenu}`;
+    }
+
+    function sharePost() {
+        closePostOptionsMenu();
+        alert('Share post feature coming soon!');
+    }
+
+    function copyPostLink() {
+        const postLink = `${window.location.origin}/post/${currentPostIdForMenu}`;
+        navigator.clipboard.writeText(postLink).then(() => {
+            closePostOptionsMenu();
+            alert('Link copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy link:', err);
+            alert('Failed to copy link. Please try again.');
+        });
+    }
+
+    function embedPost() {
+        closePostOptionsMenu();
+        alert('Embed post feature coming soon!');
+    }
+
+    function aboutThisAccount() {
+        closePostOptionsMenu();
+        alert('About this account feature coming soon!');
+    }
+
+    // Share Post Functions
+    let currentSharePostId = null;
+    let allShareUsers = [];
+    let selectedShareUsers = [];
+
+    async function openShareModal(postId) {
+        currentSharePostId = postId;
+        selectedShareUsers = [];
+        document.getElementById('shareModal').classList.add('active');
+        document.getElementById('selectedUsersChips').style.display = 'none';
+        document.getElementById('shareMessageSection').style.display = 'none';
+        document.getElementById('shareSearchInput').value = '';
+        
+        // Load following users
+        try {
+            const following = await apiCall(`/profile/${currentProfile.username}/following/`);
+            allShareUsers = following;
+            renderShareUsers(following);
+        } catch (error) {
+            console.error('Error loading users:', error);
+            document.getElementById('shareUsersList').innerHTML = 
+                '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">Failed to load users</div>';
+        }
+    }
+
+    function renderShareUsers(users) {
+        const container = document.getElementById('shareUsersList');
+        
+        if (users.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--text-secondary);">No users to share with. Follow someone first!</div>';
+            return;
+        }
+        
+        container.innerHTML = users.map(user => {
+            const isSelected = selectedShareUsers.some(u => u.username === user.username);
+            return `
+                <div class="user-list-item" data-username="${user.username}" style="padding: 8px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.2s; background: ${isSelected ? 'var(--secondary-bg)' : 'transparent'};" 
+                     onmouseover="if(!${isSelected}) this.style.background='var(--secondary-bg)'" 
+                     onmouseout="if(!${isSelected}) this.style.background='transparent'"
+                     onclick="toggleSelectUser('${user.username}', '${user.profile?.avatar || getDefaultAvatar(44)}')">
+                    <img src="${user.profile?.avatar || getDefaultAvatar(44)}" 
+                         alt="${user.username}" 
+                         style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;">
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 14px;">${user.username}</div>
+                        <div style="font-size: 14px; color: var(--text-secondary);">${user.first_name || user.username}</div>
+                    </div>
+                    <div class="share-check" style="display: ${isSelected ? 'block' : 'none'}; color: var(--link-color);">
+                        <i class="fas fa-check-circle" style="font-size: 24px;"></i>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function toggleSelectUser(username, avatar) {
+        const index = selectedShareUsers.findIndex(u => u.username === username);
+        
+        if (index > -1) {
+            // Remove from selection
+            selectedShareUsers.splice(index, 1);
+        } else {
+            // Add to selection
+            selectedShareUsers.push({ username, avatar });
+        }
+        
+        // Update UI
+        updateSelectedChips();
+        renderShareUsers(allShareUsers);
+        
+        // Show/hide message section
+        const messageSection = document.getElementById('shareMessageSection');
+        messageSection.style.display = selectedShareUsers.length > 0 ? 'block' : 'none';
+    }
+
+    function updateSelectedChips() {
+        const chipsContainer = document.getElementById('selectedUsersChips');
+        
+        if (selectedShareUsers.length === 0) {
+            chipsContainer.style.display = 'none';
+            return;
+        }
+        
+        chipsContainer.style.display = 'flex';
+        chipsContainer.innerHTML = `
+            <span style="font-weight: 600; font-size: 14px; color: var(--text-secondary);">To:</span>
+            ${selectedShareUsers.map(user => `
+                <div style="display: flex; align-items: center; gap: 6px; background: var(--link-color); color: white; padding: 4px 8px 4px 4px; border-radius: 16px; font-size: 12px;">
+                    <img src="${user.avatar}" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover;">
+                    <span>${user.username}</span>
+                    <button onclick="event.stopPropagation(); toggleSelectUser('${user.username}', '${user.avatar}')" 
+                            style="background: none; border: none; color: white; cursor: pointer; padding: 0; margin-left: 2px; font-size: 16px; line-height: 1;">
+                        ×
+                    </button>
+                </div>
+            `).join('')}
+        `;
+    }
+
+    function filterShareUsers(searchTerm) {
+        const filtered = allShareUsers.filter(user => 
+            user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (user.first_name && user.first_name.toLowerCase().includes(searchTerm.toLowerCase()))
+        );
+        renderShareUsers(filtered);
+    }
+
+    async function sendSharedPost() {
+        if (selectedShareUsers.length === 0) {
+            alert('Please select at least one person to share with');
+            return;
+        }
+        
+        const customMessage = document.getElementById('shareMessageInput').value.trim();
+        const postLink = `${window.location.origin}/post/${currentSharePostId}`;
+        const messageText = customMessage 
+            ? `${customMessage}\n\nCheck out this post: ${postLink}`
+            : `Check out this post: ${postLink}`;
+        
+        try {
+            // Send to all selected users
+            for (const user of selectedShareUsers) {
+                // Create or get conversation
+                const conversation = await apiCall('/conversations/create/', {
+                    method: 'POST',
+                    body: JSON.stringify({ username: user.username })
+                });
+                
+                // Send message
+                await apiCall(`/conversations/${conversation.id}/messages/`, {
+                    method: 'POST',
+                    body: JSON.stringify({ text: messageText })
+                });
+            }
+            
+            // Show success feedback
+            const tempMsg = document.createElement('div');
+            tempMsg.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 16px 24px; border-radius: 8px; z-index: 9999; font-size: 14px;';
+            tempMsg.textContent = selectedShareUsers.length === 1 
+                ? `Sent to ${selectedShareUsers[0].username}`
+                : `Sent to ${selectedShareUsers.length} people`;
+            document.body.appendChild(tempMsg);
+            
+            setTimeout(() => {
+                tempMsg.remove();
+            }, 2000);
+            
+            // Close modal
+            closeModal('shareModal');
+            
+        } catch (error) {
+            console.error('Error sharing post:', error);
+            alert('Failed to share post. Please try again.');
         }
     }
 
@@ -841,6 +1677,7 @@
     }
 
     // Followers Modal
+    let allFollowers = [];
     async function openFollowersModal() {
         document.getElementById('followersModal').classList.add('active');
         document.getElementById('followersListContainer').innerHTML = '<div class="loading">Loading...</div>';
@@ -848,6 +1685,7 @@
         try {
             const targetUsername = currentProfile.username;
             const followers = await apiCall(`/profile/${targetUsername}/followers/`);
+            allFollowers = followers;
             
             if (followers.length === 0) {
                 document.getElementById('followersListContainer').innerHTML = 
@@ -855,23 +1693,17 @@
                 return;
             }
 
-            document.getElementById('followersListContainer').innerHTML = followers.map(user => `
-                <div class="user-list-item">
-                    <img src="${user.profile?.avatar || 'https://via.placeholder.com/44'}" 
-                         alt="${user.username}" 
-                         class="user-list-avatar">
-                    <div class="user-list-info">
-                        <a href="/profile/${user.username}" class="user-list-username">${user.username}</a>
-                        <div class="user-list-name">${user.first_name || user.username}</div>
-                    </div>
-                    ${user.username !== currentProfile.username ? `
-                        <button class="follow-btn-modal ${user.is_following ? 'following' : ''}" 
-                                onclick="toggleFollowInModal('${user.username}', this)">
-                            ${user.is_following ? 'Following' : 'Follow'}
-                        </button>
-                    ` : ''}
-                </div>
-            `).join('');
+            renderFollowersList(followers);
+            
+            // Add search functionality
+            document.getElementById('followersSearch').oninput = (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filtered = allFollowers.filter(user => 
+                    user.username.toLowerCase().includes(searchTerm) ||
+                    (user.first_name && user.first_name.toLowerCase().includes(searchTerm))
+                );
+                renderFollowersList(filtered);
+            };
         } catch (error) {
             console.error('Error loading followers:', error);
             document.getElementById('followersListContainer').innerHTML = 
@@ -879,7 +1711,92 @@
         }
     }
 
+    async function renderFollowersList(followers) {
+        const isOwnProfile = !username || username === 'me' || username === 'profile';
+        
+        let html = followers.map(user => `
+            <div class="user-list-item" data-username="${user.username}">
+                <img src="${user.profile?.avatar || getDefaultAvatar(44)}" 
+                     alt="${user.username}" 
+                     class="user-list-avatar">
+                <div class="user-list-info">
+                    <a href="/profile/${user.username}" class="user-list-username">${user.username}</a>
+                    <div class="user-list-name">${user.first_name || user.username}</div>
+                </div>
+                ${isOwnProfile ? `
+                    <button class="follow-btn-modal following" 
+                            style="background: var(--secondary-bg); color: var(--text-primary);"
+                            onclick="removeFollower('${user.username}', this)">
+                        Remove
+                    </button>
+                ` : user.username !== currentProfile.username ? `
+                    <button class="follow-btn-modal ${user.is_following ? 'following' : ''}" 
+                            onclick="toggleFollowInModal('${user.username}', this)">
+                        ${user.is_following ? 'Following' : 'Follow'}
+                    </button>
+                ` : ''}
+            </div>
+        `).join('');
+
+        // Add suggestions if viewing own profile
+        if (isOwnProfile) {
+            try {
+                const suggestions = await apiCall('/suggestions/');
+                if (suggestions && suggestions.length > 0) {
+                    html += `<div class="suggestions-header">Suggested for you</div>`;
+                    html += suggestions.slice(0, 5).map(user => `
+                        <div class="user-list-item" data-username="${user.username}">
+                            <img src="${user.profile?.avatar || getDefaultAvatar(44)}" 
+                                 alt="${user.username}" 
+                                 class="user-list-avatar">
+                            <div class="user-list-info">
+                                <a href="/profile/${user.username}" class="user-list-username">${user.username}</a>
+                                <div class="user-list-name">${user.first_name || user.username}</div>
+                                <div class="user-list-subtitle">Suggested for you</div>
+                            </div>
+                            <button class="follow-btn-modal" 
+                                    onclick="toggleFollowInModal('${user.username}', this)">
+                                Follow
+                            </button>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading suggestions:', error);
+            }
+        }
+
+        document.getElementById('followersListContainer').innerHTML = html;
+    }
+
+    async function removeFollower(username, button) {
+        if (!confirm(`Remove ${username} from followers?`)) return;
+        
+        try {
+            // Remove follower by making them unfollow you
+            await apiCall(`/profile/${username}/remove-follower/`, { method: 'POST' });
+            
+            // Remove from UI
+            const item = button.closest('.user-list-item');
+            item.style.transition = 'opacity 0.3s';
+            item.style.opacity = '0';
+            setTimeout(() => {
+                item.remove();
+                allFollowers = allFollowers.filter(u => u.username !== username);
+            }, 300);
+            
+            // Update profile counts
+            loadProfile();
+        } catch (error) {
+            console.error('Error removing follower:', error);
+            alert('Failed to remove follower. Please try again.');
+        }
+    }
+
     // Following Modal
+    let allFollowing = [];
+    let userToUnfollow = null;
+    
     async function openFollowingModal() {
         document.getElementById('followingModal').classList.add('active');
         document.getElementById('followingListContainer').innerHTML = '<div class="loading">Loading...</div>';
@@ -887,6 +1804,7 @@
         try {
             const targetUsername = currentProfile.username;
             const following = await apiCall(`/profile/${targetUsername}/following/`);
+            allFollowing = following;
             
             if (following.length === 0) {
                 document.getElementById('followingListContainer').innerHTML = 
@@ -894,27 +1812,85 @@
                 return;
             }
 
-            document.getElementById('followingListContainer').innerHTML = following.map(user => `
-                <div class="user-list-item">
-                    <img src="${user.profile?.avatar || 'https://via.placeholder.com/44'}" 
-                         alt="${user.username}" 
-                         class="user-list-avatar">
-                    <div class="user-list-info">
-                        <a href="/profile/${user.username}" class="user-list-username">${user.username}</a>
-                        <div class="user-list-name">${user.first_name || user.username}</div>
-                    </div>
-                    ${user.username !== currentProfile.username ? `
-                        <button class="follow-btn-modal following" 
-                                onclick="toggleFollowInModal('${user.username}', this)">
-                            Following
-                        </button>
-                    ` : ''}
-                </div>
-            `).join('');
+            renderFollowingList(following);
+            
+            // Add search functionality
+            document.getElementById('followingSearch').oninput = (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filtered = allFollowing.filter(user => 
+                    user.username.toLowerCase().includes(searchTerm) ||
+                    (user.first_name && user.first_name.toLowerCase().includes(searchTerm))
+                );
+                renderFollowingList(filtered);
+            };
         } catch (error) {
             console.error('Error loading following:', error);
             document.getElementById('followingListContainer').innerHTML = 
                 '<div class="loading">Failed to load following</div>';
+        }
+    }
+
+    function renderFollowingList(following) {
+        const isOwnProfile = !username || username === 'me' || username === 'profile';
+        
+        document.getElementById('followingListContainer').innerHTML = following.map(user => `
+            <div class="user-list-item" data-username="${user.username}">
+                <img src="${user.profile?.avatar || getDefaultAvatar(44)}" 
+                     alt="${user.username}" 
+                     class="user-list-avatar">
+                <div class="user-list-info">
+                    <a href="/profile/${user.username}" class="user-list-username">${user.username}</a>
+                    <div class="user-list-name">${user.first_name || user.username}</div>
+                </div>
+                ${isOwnProfile && user.username !== currentProfile.username ? `
+                    <button class="follow-btn-modal following" 
+                            onclick="showUnfollowConfirmation('${user.username}', '${user.profile?.avatar || getDefaultAvatar(44)}')">
+                        Following
+                    </button>
+                ` : !isOwnProfile && user.username !== currentProfile.username ? `
+                    <button class="follow-btn-modal ${user.is_following ? 'following' : ''}" 
+                            onclick="toggleFollowInModal('${user.username}', this)">
+                        ${user.is_following ? 'Following' : 'Follow'}
+                    </button>
+                ` : ''}
+            </div>
+        `).join('');
+    }
+
+    function showUnfollowConfirmation(username, avatar) {
+        userToUnfollow = username;
+        document.getElementById('unfollowUserAvatar').src = avatar;
+        document.getElementById('unfollowMessage').textContent = 
+            `If you change your mind, you'll have to request to follow @${username} again.`;
+        document.getElementById('unfollowModal').classList.add('active');
+    }
+
+    async function confirmUnfollow() {
+        if (!userToUnfollow) return;
+        
+        try {
+            await apiCall(`/profile/${userToUnfollow}/follow/`, { method: 'POST' });
+            
+            // Close unfollow modal
+            closeModal('unfollowModal');
+            
+            // Remove from UI
+            const item = document.querySelector(`[data-username="${userToUnfollow}"]`);
+            if (item) {
+                item.style.transition = 'opacity 0.3s';
+                item.style.opacity = '0';
+                setTimeout(() => {
+                    item.remove();
+                    allFollowing = allFollowing.filter(u => u.username !== userToUnfollow);
+                }, 300);
+            }
+            
+            // Update profile counts
+            loadProfile();
+            userToUnfollow = null;
+        } catch (error) {
+            console.error('Error unfollowing user:', error);
+            alert('Failed to unfollow. Please try again.');
         }
     }
 
@@ -972,9 +1948,119 @@
         }
     });
 
+    // Story Functions
+    async function loadUserStories() {
+        try {
+            const response = await apiCall('/stories/');
+            
+            // Handle both array and paginated response
+            const stories = Array.isArray(response) ? response : (response.results || []);
+            
+            // Find stories for current profile user
+            userStories = stories.filter(s => s.username === currentProfile.username);
+            hasActiveStory = userStories.length > 0;
+            
+            // Re-render profile to show/hide story ring
+            if (currentProfile) {
+                renderProfile(currentProfile);
+                loadUserPosts(currentProfile.username);
+            }
+        } catch (error) {
+            console.error('Error loading stories:', error);
+            userStories = [];
+            hasActiveStory = false;
+        }
+    }
+
+    function openAddStoryModal() {
+        document.getElementById('addStoryModal').classList.add('active');
+    }
+
+    // Story image preview
+    document.addEventListener('change', (e) => {
+        if (e.target.id === 'storyImageInput') {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('storyPreview').src = e.target.result;
+                    document.getElementById('storyPreviewContainer').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    });
+
+    // Upload story
+    document.getElementById('addStoryForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData();
+        const imageFile = document.getElementById('storyImageInput').files[0];
+        
+        if (!imageFile) {
+            alert('Please select an image');
+            return;
+        }
+        
+        formData.append('image', imageFile);
+        
+        try {
+            const response = await fetch('/api/stories/', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${authToken}`
+                },
+                body: formData
+            });
+            
+            if (!response.ok) throw new Error('Failed to create story');
+            
+            const story = await response.json();
+            
+            // Close modal and refresh
+            closeModal('addStoryModal');
+            document.getElementById('addStoryForm').reset();
+            document.getElementById('storyPreviewContainer').style.display = 'none';
+            
+            // Reload stories
+            await loadUserStories();
+            
+            alert('Story posted successfully! It will disappear in 24 hours.');
+        } catch (error) {
+            console.error('Error creating story:', error);
+            alert('Failed to post story. Please try again.');
+        }
+    });
+
+    // View profile story
+    async function viewProfileStory() {
+        if (userStories.length === 0) return;
+        
+        const story = userStories[0]; // Show most recent
+        
+        document.getElementById('storyViewerAvatar').src = story.user_avatar || getDefaultAvatar(44);
+        document.getElementById('storyViewerUsername').textContent = story.username;
+        document.getElementById('storyViewerTime').textContent = getTimeSince(new Date(story.created_at));
+        document.getElementById('storyViewImage').src = story.image;
+        
+        document.getElementById('viewStoryModal').classList.add('active');
+    }
+
+    function getTimeSince(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        
+        if (seconds < 60) return `${seconds}s ago`;
+        if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+        if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+        return `${Math.floor(seconds / 86400)}d ago`;
+    }
+
     // Initialize
     if (authToken) {
-        loadProfile();
+        loadProfile().then(() => {
+            loadUserStories();
+        });
     } else {
         window.location.href = '/login';
     }

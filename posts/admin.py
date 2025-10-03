@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post, Comment, Story, StoryView
+from .models import Post, Comment, Story, StoryView, SavedPost
 
 
 @admin.register(Post)
@@ -29,3 +29,10 @@ class StoryViewAdmin(admin.ModelAdmin):
     list_display = ('story', 'viewer', 'viewed_at')
     list_filter = ('viewed_at',)
     search_fields = ('viewer__username',)
+
+
+@admin.register(SavedPost)
+class SavedPostAdmin(admin.ModelAdmin):
+    list_display = ('user', 'post', 'saved_at')
+    list_filter = ('saved_at',)
+    search_fields = ('user__username', 'post__id')

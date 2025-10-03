@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile, Notification, Conversation, Message
+from .models import Profile, Notification, Conversation, Message, UserNote, MessageRequest
 
 
 @admin.register(Profile)
@@ -27,3 +27,16 @@ class MessageAdmin(admin.ModelAdmin):
     list_display = ('sender', 'conversation', 'text', 'is_read', 'created_at')
     list_filter = ('is_read', 'created_at')
     search_fields = ('sender__username', 'text')
+
+
+@admin.register(UserNote)
+class UserNoteAdmin(admin.ModelAdmin):
+    list_display = ('user', 'text', 'updated_at')
+    search_fields = ('user__username', 'text')
+
+
+@admin.register(MessageRequest)
+class MessageRequestAdmin(admin.ModelAdmin):
+    list_display = ('recipient', 'conversation', 'is_accepted', 'is_declined', 'created_at')
+    list_filter = ('is_accepted', 'is_declined', 'created_at')
+    search_fields = ('recipient__username',)

@@ -244,11 +244,14 @@
         const html = `
             <div class="post-detail-container">
                 <div class="post-image-section">
-                    <img src="${post.image}" alt="Post">
+                    ${post.video ? 
+                        `<video src="${post.video}" controls style="max-width: 100%; max-height: 100%;"></video>` :
+                        `<img src="${post.image}" alt="Post">`
+                    }
                 </div>
                 <div class="post-info-section">
                     <div class="post-detail-header">
-                        <img src="${post.author_avatar || 'https://via.placeholder.com/32'}" 
+                        <img src="${post.author_avatar || getDefaultAvatar(32)}" 
                              alt="${post.author_username}" 
                              class="post-detail-avatar">
                         <a href="/profile/${post.author_username}" class="post-detail-username">
@@ -260,7 +263,7 @@
                     <div class="post-comments-section" id="commentsSection">
                         ${post.caption ? `
                             <div class="post-caption-item">
-                                <img src="${post.author_avatar || 'https://via.placeholder.com/32'}" 
+                                <img src="${post.author_avatar || getDefaultAvatar(32)}" 
                                      alt="${post.author_username}" 
                                      class="comment-avatar">
                                 <div class="comment-content">
@@ -278,7 +281,7 @@
                         <div id="commentsList">
                             ${post.comments.map(comment => `
                                 <div class="comment-item">
-                                    <img src="${comment.author_avatar || 'https://via.placeholder.com/32'}" 
+                                    <img src="${comment.author_avatar || getDefaultAvatar(32)}" 
                                          alt="${comment.author_username}" 
                                          class="comment-avatar">
                                     <div class="comment-content">

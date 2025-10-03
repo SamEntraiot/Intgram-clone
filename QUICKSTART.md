@@ -1,194 +1,163 @@
 # 🚀 Quick Start Guide
 
-## Start the Application in 3 Steps
+Get your Instagram clone running in 5 minutes!
 
-### Step 1: Create a Superuser
-```bash
-.venv\Scripts\python.exe manage.py createsuperuser
-```
-- Enter username (e.g., `admin`)
-- Enter email (e.g., `admin@example.com`)
-- Enter password (e.g., `admin123`)
+## Step 1: Install Dependencies
 
-### Step 2: Start the Development Server
 ```bash
-.venv\Scripts\python.exe manage.py runserver
+pip install -r requirements.txt
 ```
 
-### Step 3: Open Your Browser
-Visit: **http://localhost:8000/**
+## Step 2: Setup Database
 
----
-
-## 🎯 First Time Usage
-
-### Option A: Create Your Own Account
-1. Go to http://localhost:8000/login
-2. Click "Sign up"
-3. Fill in the registration form
-4. Start using the app!
-
-### Option B: Use Admin Account
-1. Login with the superuser credentials you created
-2. Go to profile and set it up
-3. Create some posts
-
-### Option C: Generate Test Data (Recommended)
 ```bash
-.venv\Scripts\python.exe manage.py shell < create_test_data.py
-```
-
-This creates 5 test users:
-- **john_doe** / password123
-- **jane_smith** / password123
-- **bob_wilson** / password123
-- **alice_brown** / password123
-- **charlie_davis** / password123
-
----
-
-## 📋 What You Can Do
-
-### ✅ Already Working Features
-
-1. **Authentication**
-   - Register new account
-   - Login/logout
-   - JWT token authentication
-
-2. **Profile Management**
-   - View your profile
-   - Edit profile (avatar, bio, website)
-   - View other users' profiles
-   - See post/follower/following counts
-
-3. **Posts**
-   - Create posts with images
-   - Like/unlike posts
-   - Comment on posts
-   - Delete your own posts
-   - View posts in grid on profile
-
-4. **Feed**
-   - See posts from people you follow
-   - Infinite scroll
-   - Real-time likes and comments
-
-5. **Follow System**
-   - Follow/unfollow users
-   - See who follows you
-   - Track following count
-
-6. **Stories**
-   - Create 24-hour stories
-   - View stories from followed users
-   - Stories auto-expire
-
-7. **Search & Explore**
-   - Search users by username
-   - Explore random posts
-   - Discover new content
-
-8. **Messages**
-   - Send direct messages
-   - Create conversations
-   - Real-time message updates
-
-9. **Notifications**
-   - Get notified on likes
-   - Get notified on comments
-   - Get notified on new followers
-   - Mark all as read
-
----
-
-## 🔑 Important URLs
-
-| Page | URL |
-|------|-----|
-| Home/Feed | http://localhost:8000/ |
-| Login | http://localhost:8000/login |
-| Profile | http://localhost:8000/profile |
-| Explore | http://localhost:8000/explore |
-| Messages | http://localhost:8000/messages |
-| Notifications | http://localhost:8000/notifications |
-| Admin Panel | http://localhost:8000/admin/ |
-| API Docs | See README.md |
-
----
-
-## 🛠️ Admin Panel Access
-
-1. Go to http://localhost:8000/admin/
-2. Login with superuser credentials
-3. Manage:
-   - Users and profiles
-   - Posts and comments
-   - Stories
-   - Notifications
-   - Messages
-
----
-
-## 💡 Tips
-
-1. **Create Multiple Accounts** - Test following/followers features
-2. **Upload Images** - JPEG/PNG files work best
-3. **Try Mobile View** - Responsive design works on all devices
-4. **Use DevTools** - Open browser console to see API calls
-5. **Check Admin** - View all data in Django admin panel
-
----
-
-## 🐛 Troubleshooting
-
-### Server won't start?
-```bash
-# Make sure you're in the right directory
-cd "c:/Users/Nisha/Desktop/instgram clone"
-
-# Activate virtual environment
-.venv\Scripts\activate
-
-# Try running migrations again
+python manage.py makemigrations
 python manage.py migrate
 ```
 
+## Step 3: Create Admin Account
+
+```bash
+python manage.py createsuperuser
+```
+
+Enter username, email, and password when prompted.
+
+## Step 4: Start Server
+
+```bash
+python manage.py runserver
+```
+
+## Step 5: Open Browser
+
+Visit: **http://localhost:8000**
+
+---
+
+## ✅ What Works Immediately
+
+### Without Configuration:
+- ✅ User registration & login
+- ✅ Create posts with images
+- ✅ Like & comment on posts
+- ✅ Follow/unfollow users
+- ✅ User profiles
+- ✅ Feed from followed users
+- ✅ Search users
+- ✅ Explore posts
+- ✅ 24-hour stories
+- ✅ Real-time messaging
+- ✅ Notifications
+- ✅ Password reset (emails in console)
+
+### Requires Setup (Optional):
+- ⚙️ Google OAuth Login - See `SETUP_GUIDE.md` Section "Google OAuth Setup"
+- ⚙️ Production Email (Gmail) - See `SETUP_GUIDE.md` Section "Email Configuration"
+
+---
+
+## 🎯 First Steps After Starting
+
+1. **Go to http://localhost:8000/login**
+2. Click "Sign up" and create your account
+3. Upload a profile picture
+4. Create your first post
+5. Search for other users and follow them
+6. Check out the explore page
+
+---
+
+## 📱 Key Features
+
+| Feature | Description |
+|---------|-------------|
+| 🔐 **Authentication** | Register, login, Google OAuth, password reset |
+| 👤 **Profiles** | Avatar, bio, website, edit profile |
+| 📸 **Posts** | Upload images, captions, like, comment, delete |
+| 📰 **Feed** | See posts from people you follow |
+| 👥 **Follow System** | Follow/unfollow, followers/following lists |
+| 🔍 **Search** | Find users by username |
+| 🌐 **Explore** | Discover new posts and users |
+| 📖 **Stories** | 24-hour disappearing content |
+| 💬 **Messaging** | One-to-one real-time chat |
+| 🔔 **Notifications** | Like, comment, follow alerts |
+
+---
+
+## 🐛 Quick Troubleshooting
+
+### Server won't start?
+```bash
+# Make sure you're in the project directory
+cd "c:\Users\Nisha\Desktop\instgram clone"
+
+# Check if port 8000 is available
+# On Windows: netstat -ano | findstr :8000
+```
+
 ### Can't login?
-- Make sure you created a user account
-- Check username/password spelling
-- Try creating a new account
+- Make sure you created an account at http://localhost:8000/login
+- Check username and password are correct
+- Look for error messages in the browser console (F12)
 
-### Images not showing?
-- Check if media folder exists
-- Make sure DEBUG=True in settings.py
-- Verify file was uploaded successfully
+### Images not uploading?
+- Check that the `media` folder exists
+- Ensure you have write permissions
+- Try a smaller image file (< 5MB)
 
-### API errors?
-- Open browser DevTools (F12)
-- Check Console tab for errors
-- Check Network tab for failed requests
+### Need help?
+Check the detailed `SETUP_GUIDE.md` for comprehensive documentation.
 
 ---
 
-## 📞 Need Help?
+## 🎨 Create Test Data (Optional)
 
-Check these in order:
-1. Read the error message carefully
-2. Check browser console (F12)
-3. Check server terminal output
-4. Review README.md for details
-5. Check Django admin panel
+To quickly test with multiple users:
+
+```bash
+python manage.py shell
+```
+
+```python
+from django.contrib.auth.models import User
+
+# Create 5 test users
+for i in range(1, 6):
+    User.objects.create_user(
+        username=f'user{i}',
+        email=f'user{i}@test.com',
+        password='password123'
+    )
+    print(f"Created user{i}")
+```
+
+Now you can login as `user1`, `user2`, etc. with password `password123`
 
 ---
 
-## 🎉 Have Fun!
+## 📚 Documentation
 
-Start by:
-1. Creating an account
-2. Setting up your profile
-3. Creating your first post
-4. Following some users
-5. Exploring content
+- **Full Setup**: `SETUP_GUIDE.md`
+- **Features List**: `FEATURES_CHECKLIST.md`
+- **API Docs**: See `SETUP_GUIDE.md` → API Endpoints section
+- **WebSocket Setup**: `WEBSOCKET_SETUP.md`
+
+---
+
+## 🎉 You're Ready!
+
+Your Instagram clone is running with ALL 10 features:
+
+1. ✅ Authentication (with Google OAuth + Password Reset)
+2. ✅ User Profiles
+3. ✅ Posts (Create, Like, Comment, Delete)
+4. ✅ Feed (Homepage)
+5. ✅ Follow System
+6. ✅ Search & Explore
+7. ✅ Stories (24-hour)
+8. ✅ Messaging (Real-time)
+9. ✅ Notifications
+10. ✅ Instagram-like UI (Mobile-responsive)
 
 **Enjoy your Instagram clone!** 🚀

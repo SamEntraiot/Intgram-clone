@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from accounts.template_views import (
     index_view, login_view, profile_view, explore_view,
-    messages_view, notifications_view, post_detail_view
+    messages_view, notifications_view, post_detail_view, reset_password_view
 )
 
 urlpatterns = [
@@ -13,6 +13,9 @@ urlpatterns = [
     # API endpoints
     path('api/', include('accounts.urls')),
     path('api/', include('posts.urls')),
+    
+    # Social authentication (Google OAuth)
+    path('accounts/', include('allauth.urls')),
     
     # Frontend pages
     path('', index_view, name='index'),
@@ -23,6 +26,7 @@ urlpatterns = [
     path('post/<int:post_id>', post_detail_view, name='post-detail'),
     path('profile', profile_view, name='my-profile-page'),
     path('profile/<str:username>', profile_view, name='profile-page'),
+    path('reset-password/<str:uid>/<str:token>/', reset_password_view, name='reset-password'),
 ]
 
 # Serve media files in development

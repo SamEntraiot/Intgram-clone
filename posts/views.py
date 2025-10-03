@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnl
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Q
-from .models import Post, Comment, Story, StoryView
+from .models import Post, Comment, Story, StoryView, SavedPost
 from .serializers import (
     PostSerializer, PostCreateSerializer, CommentSerializer,
     StorySerializer, StoryViewSerializer
@@ -28,8 +28,8 @@ class PostListCreateView(generics.ListCreateAPIView):
         serializer.save(author=self.request.user)
 
 
-class PostDetailView(generics.RetrieveDestroyAPIView):
-    """Get post details and delete post (owner only)"""
+class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """Get post details, update caption, and delete post (owner only)"""
     serializer_class = PostSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     
@@ -40,6 +40,21 @@ class PostDetailView(generics.RetrieveDestroyAPIView):
         context = super().get_serializer_context()
         context['request'] = self.request
         return context
+    
+    def update(self, request, *args, **kwargs):
+        post = self.get_object()
+        if post.author != request.user:
+            return Response(
+                {'error': 'You can only edit your own posts'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        # Only allow updating the caption
+        if 'caption' in request.data:
+            post.caption = request.data['caption']
+            post.save()
+            serializer = self.get_serializer(post)
+            return Response(serializer.data)
+        return Response({'error': 'No caption provided'}, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, *args, **kwargs):
         post = self.get_object()
@@ -63,6 +78,23 @@ def toggle_like(request, pk):
     else:
         post.likes.add(request.user)
         return Response({'status': 'liked'}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggle_save(request, pk):
+    """Toggle save on a post"""
+    post = get_object_or_404(Post, pk=pk)
+    
+    # Check if already saved
+    saved = SavedPost.objects.filter(user=request.user, post=post).first()
+    
+    if saved:
+        saved.delete()
+        return Response({'status': 'unsaved'}, status=status.HTTP_200_OK)
+    else:
+        SavedPost.objects.create(user=request.user, post=post)
+        return Response({'status': 'saved'}, status=status.HTTP_200_OK)
 
 
 class CommentListCreateView(generics.ListCreateAPIView):
@@ -128,13 +160,22 @@ class StoryListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        # Get active stories from user and following
+        # Get active stories from user, following, and followers
         user = self.request.user
+        
+        # Get users you follow
         following_profiles = user.profile.following.all()
         following_users = [profile.user for profile in following_profiles]
         
+        # Get users who follow you
+        follower_profiles = user.profile.followers.all()
+        follower_users = [profile.user for profile in follower_profiles]
+        
+        # Combine both lists
+        all_users = set(following_users + follower_users + [user])
+        
         return Story.objects.filter(
-            Q(user__in=following_users) | Q(user=user),
+            user__in=all_users,
             expires_at__gt=timezone.now()
         ).select_related('user', 'user__profile').order_by('-created_at')
     

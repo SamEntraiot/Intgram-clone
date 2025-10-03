@@ -190,15 +190,57 @@
     }
 
     /* Stories */
-    .stories-container {
+    .stories-section {
         background: var(--primary-bg);
         border: 1px solid var(--border-color);
         border-radius: 8px;
         padding: 16px;
         margin-bottom: 24px;
-        overflow-x: auto;
+    }
+
+    .stories-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    .stories-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .watch-all-btn {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .watch-all-btn:hover {
+        opacity: 0.7;
+    }
+
+    .stories-container {
         display: flex;
         gap: 16px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+
+    .stories-container::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .stories-container::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 3px;
     }
 
     .story-item {
@@ -207,30 +249,85 @@
         align-items: center;
         cursor: pointer;
         min-width: 66px;
+        transition: opacity 0.2s;
+    }
+
+    .story-item:hover {
+        opacity: 0.8;
     }
 
     .story-avatar {
         width: 66px;
         height: 66px;
         border-radius: 50%;
-        border: 3px solid #e1306c;
-        padding: 2px;
-        margin-bottom: 4px;
+        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        padding: 3px;
+        margin-bottom: 8px;
+        position: relative;
     }
 
-    .story-avatar img {
+    /* Viewed story - gray border (Instagram style) */
+    .story-item.viewed .story-avatar {
+        background: #F5F5F5;
+    }
+    
+    .story-item.viewed .story-username {
+        color: #8e8e8e;
+    }
+
+    .story-avatar-inner {
         width: 100%;
         height: 100%;
         border-radius: 50%;
+        border: 3px solid var(--primary-bg);
+        overflow: hidden;
+        background: var(--secondary-bg);
+    }
+
+    .story-avatar-inner img {
+        width: 100%;
+        height: 100%;
         object-fit: cover;
+    }
+
+    .add-story-btn {
+        background: var(--primary-bg);
+        border: none;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .add-story-avatar {
+        width: 66px;
+        height: 66px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8px;
+    }
+
+    .add-story-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--primary-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        color: var(--text-primary);
     }
 
     .story-username {
         font-size: 12px;
-        max-width: 66px;
+        max-width: 74px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        text-align: center;
+        color: var(--text-primary);
     }
 
     /* Post Card */
@@ -476,10 +573,14 @@
             max-width: 100%;
         }
 
-        .stories-container {
+        .stories-section {
             border-radius: 0;
             border-left: none;
             border-right: none;
+        }
+
+        .stories-container {
+            gap: 12px;
         }
 
         .post-card {
@@ -494,9 +595,17 @@
 {% block content %}
 <div class="feed-container">
     <div class="feed-main">
-        <!-- Stories -->
-        <div class="stories-container" id="storiesContainer">
-            <div class="loading">Loading stories...</div>
+        <!-- Stories Section -->
+        <div class="stories-section" id="storiesSection">
+            <div class="stories-header">
+                <h2 class="stories-title">Stories</h2>
+                <button class="watch-all-btn" onclick="watchAllStories()">
+                    Watch all <span>▶</span>
+                </button>
+            </div>
+            <div class="stories-container" id="storiesContainer">
+                <div class="loading">Loading stories...</div>
+            </div>
         </div>
 
         <!-- Posts Feed -->
@@ -508,7 +617,7 @@
     <!-- Sidebar (desktop only) -->
     <div class="feed-sidebar">
         <div class="user-profile">
-            <img src="https://via.placeholder.com/56" alt="Profile" id="sidebarAvatar">
+            <img src="" alt="Profile" id="sidebarAvatar">
             <div class="user-info">
                 <span class="username" id="sidebarUsername">username</span>
                 <span class="name" id="sidebarName">Full Name</span>
@@ -542,37 +651,161 @@
     let currentPage = 1;
     let isLoading = false;
     let hasMorePosts = true;
+    
+    // Global story queue for continuous viewing
+    let allUserStoriesQueue = [];
+    let currentUserIndex = 0;
 
     // Load stories
     async function loadStories() {
-        try {
-            const stories = await apiCall('/stories/');
-            const container = document.getElementById('storiesContainer');
-            
-            // Handle empty or null response - hide container completely
-            if (!stories || !Array.isArray(stories) || stories.length === 0) {
-                container.style.display = 'none';
-                return;
-            }
-
-            // Show container and populate with stories
-            container.style.display = 'flex';
-            container.innerHTML = stories.map(story => `
-                <div class="story-item" onclick="viewStory(${story.id})">
-                    <div class="story-avatar">
-                        <img src="${story.user_avatar || 'https://via.placeholder.com/66'}" 
-                             alt="${story.username || 'User'}"
-                             onerror="this.src='https://via.placeholder.com/66'">
-                    </div>
-                    <span class="story-username">${story.username || 'Unknown'}</span>
+        const container = document.getElementById('storiesContainer');
+        const section = document.getElementById('storiesSection');
+        
+        // Always show section with "Add story" button
+        section.style.display = 'block';
+        
+        // Always add "Add story" button first
+        let storiesHTML = `
+            <button class="add-story-btn story-item" onclick="addStory()">
+                <div class="add-story-avatar">
+                    <div class="add-story-icon">+</div>
                 </div>
-            `).join('');
+                <span class="story-username">Add story</span>
+            </button>
+        `;
+        
+        try {
+            const response = await apiCall('/stories/');
+            
+            // Handle both array and paginated response
+            const stories = Array.isArray(response) ? response : (response.results || []);
+            
+            console.log('Stories loaded:', stories.length, 'stories');
+            
+            // Group stories by username
+            const groupedStories = {};
+            stories.forEach(story => {
+                const username = story.username || 'Unknown';
+                if (!groupedStories[username]) {
+                    groupedStories[username] = {
+                        username: username,
+                        user_avatar: story.user_avatar,
+                        user_id: story.user_id,
+                        stories: [],
+                        is_viewed: true // Will be set to false if any story is unviewed
+                    };
+                }
+                groupedStories[username].stories.push(story);
+                // If any story is not viewed, mark the whole group as not viewed
+                if (!story.is_viewed) {
+                    groupedStories[username].is_viewed = false;
+                }
+            });
+            
+            // Convert grouped stories to array
+            let userStories = Object.values(groupedStories);
+            
+            // Sort: unviewed stories first, viewed stories last (Instagram behavior)
+            userStories.sort((a, b) => {
+                if (a.is_viewed === b.is_viewed) return 0;
+                return a.is_viewed ? 1 : -1; // Unviewed (false) comes first
+            });
+            
+            // Store in global queue for continuous viewing
+            allUserStoriesQueue = userStories;
+            
+            // Add user stories if available
+            if (userStories && userStories.length > 0) {
+                storiesHTML += userStories.map(userStory => {
+                    // Add "viewed" class if all stories have been viewed
+                    const viewedClass = userStory.is_viewed ? 'viewed' : '';
+                    // Use global safe image function
+                    const avatarSrc = safeImageSrc(userStory.user_avatar, 66);
+                    // Store first story ID for viewing
+                    const firstStoryId = userStory.stories[0].id;
+                    const userIndex = userStories.indexOf(userStory);
+                    return `
+                        <div class="story-item ${viewedClass}" onclick="viewUserStoriesAtIndex(${userIndex})">
+                            <div class="story-avatar">
+                                <div class="story-avatar-inner">
+                                    <img src="${avatarSrc}" 
+                                         alt="${userStory.username}"
+                                         onerror="this.src=getDefaultAvatar(66)">
+                                </div>
+                            </div>
+                            <span class="story-username">${userStory.username}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
         } catch (error) {
             console.error('Error loading stories:', error);
-            const container = document.getElementById('storiesContainer');
-            // Hide container on error
-            container.style.display = 'none';
+            // Continue to show "Add story" button even on error
         }
+        
+        // Update container with stories HTML
+        container.innerHTML = storiesHTML;
+    }
+
+    function viewStory(storyId) {
+        // Open full-screen story viewer
+        openStoryViewer(storyId);
+    }
+
+    function viewUserStoriesAtIndex(userIndex) {
+        // Set current user index and view their stories
+        currentUserIndex = userIndex;
+        
+        if (allUserStoriesQueue[currentUserIndex]) {
+            const userStory = allUserStoriesQueue[currentUserIndex];
+            openStoryViewerWithStories(userStory.stories, true); // true = enable auto-next
+        }
+    }
+    
+    function moveToNextUserStories() {
+        // Move to next user's stories automatically
+        currentUserIndex++;
+        
+        if (currentUserIndex < allUserStoriesQueue.length) {
+            const nextUserStory = allUserStoriesQueue[currentUserIndex];
+            console.log('Auto-playing next user stories:', nextUserStory.username);
+            openStoryViewerWithStories(nextUserStory.stories, true);
+        } else {
+            // No more users, close viewer
+            console.log('All stories watched!');
+            closeStoryViewer();
+        }
+    }
+    
+    async function viewUserStories(username, firstStoryId) {
+        // Load all stories for this user and open story viewer (legacy function)
+        try {
+            const response = await apiCall('/stories/');
+            const allStories = Array.isArray(response) ? response : (response.results || []);
+            
+            // Filter stories for this specific user
+            const userStories = allStories.filter(story => story.username === username);
+            
+            if (userStories.length > 0) {
+                // Open story viewer with all user's stories
+                openStoryViewerWithStories(userStories, false);
+            }
+        } catch (error) {
+            console.error('Error loading user stories:', error);
+            // Fallback to single story
+            openStoryViewer(firstStoryId);
+        }
+    }
+
+    function addStory() {
+        // Open story creation modal
+        openStoryModal();
+    }
+
+    function watchAllStories() {
+        // Navigate to all stories view
+        alert('Watch All Stories - Coming soon!');
+        // You can implement: window.location.href = '/stories/all';
     }
 
     // Load feed
@@ -613,15 +846,19 @@
 
     function createPostElement(post) {
         const timeSince = getTimeSince(new Date(post.created_at));
+        const avatarSrc = safeImageSrc(post.author_avatar, 32);
         
         return `
             <div class="post-card" data-post-id="${post.id}">
                 <div class="post-header">
-                    <img src="${post.author_avatar || 'https://via.placeholder.com/32'}" alt="${post.author_username}" class="post-avatar">
+                    <img src="${avatarSrc}" alt="${post.author_username}" class="post-avatar" onerror="this.src='${getDefaultAvatar(32)}'">
                     <a href="/profile/${post.author_username}" class="post-author">${post.author_username}</a>
                     <button class="post-options" onclick="showPostOptions(${post.id})">⋯</button>
                 </div>
-                <img src="${post.image}" alt="Post" class="post-image">
+                ${post.video ? 
+                    `<video src="${post.video}" class="post-image" controls></video>` :
+                    `<img src="${post.image}" alt="Post" class="post-image">`
+                }
                 <div class="post-actions">
                     <button class="post-action ${post.is_liked ? 'liked' : ''}" onclick="toggleLike(${post.id}, this)">
                         <i class="${post.is_liked ? 'fas' : 'far'} fa-heart"></i>
@@ -758,18 +995,21 @@
                 return;
             }
 
-            container.innerHTML = users.slice(0, 5).map(user => `
-                <div class="suggestion-item" data-username="${user.username}">
-                    <img src="${user.profile?.avatar || 'https://via.placeholder.com/32'}" alt="${user.username}">
-                    <div class="suggestion-info">
-                        <div class="username">${user.username}</div>
-                        <div class="subtitle">Suggested for you</div>
+            container.innerHTML = users.slice(0, 5).map(user => {
+                const userAvatarSrc = safeImageSrc(user.profile?.avatar, 32);
+                return `
+                    <div class="suggestion-item" data-username="${user.username}">
+                        <img src="${userAvatarSrc}" alt="${user.username}" onerror="this.src='${getDefaultAvatar(32)}'">
+                        <div class="suggestion-info">
+                            <div class="username">${user.username}</div>
+                            <div class="subtitle">Suggested for you</div>
+                        </div>
+                        <button class="follow-btn-small" onclick="followUser('${user.username}', this)">
+                            ${user.is_following ? 'Following' : 'Follow'}
+                        </button>
                     </div>
-                    <button class="follow-btn-small" onclick="followUser('${user.username}', this)">
-                        ${user.is_following ? 'Following' : 'Follow'}
-                    </button>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         } catch (error) {
             console.error('Error loading suggestions:', error);
             document.getElementById('suggestionsContainer').innerHTML = '<div style="color: var(--text-secondary); font-size: 14px;">Failed to load suggestions</div>';
@@ -810,9 +1050,9 @@
             const profile = await apiCall('/profile/me/');
             document.getElementById('sidebarUsername').textContent = profile.username;
             document.getElementById('sidebarName').textContent = profile.user?.first_name || profile.username;
-            if (profile.avatar) {
-                document.getElementById('sidebarAvatar').src = profile.avatar;
-            }
+            const sidebarAvatar = document.getElementById('sidebarAvatar');
+            sidebarAvatar.src = safeImageSrc(profile.avatar, 56);
+            sidebarAvatar.onerror = function() { this.src = getDefaultAvatar(56); };
         } catch (error) {
             console.error('Error loading profile:', error);
         }

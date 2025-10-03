@@ -12,6 +12,7 @@ urlpatterns = [
     path('profile/me/', views.MyProfileView.as_view(), name='my-profile'),
     path('profile/<str:username>/', views.ProfileDetailView.as_view(), name='profile-detail'),
     path('profile/<str:username>/follow/', views.follow_user, name='follow-user'),
+    path('profile/<str:username>/remove-follower/', views.remove_follower, name='remove-follower'),
     path('profile/<str:username>/followers/', views.get_followers, name='get-followers'),
     path('profile/<str:username>/following/', views.get_following, name='get-following'),
     
@@ -22,6 +23,10 @@ urlpatterns = [
     # Notifications
     path('notifications/', views.NotificationListView.as_view(), name='notifications'),
     path('notifications/read/', views.mark_notifications_read, name='mark-notifications-read'),
+    
+    # Password Reset
+    path('password-reset/', views.password_reset_request, name='password-reset-request'),
+    path('password-reset-confirm/', views.password_reset_confirm, name='password-reset-confirm'),
     
     # Conversations & Messages
     path('conversations/', views.ConversationListView.as_view(), name='conversations'),
