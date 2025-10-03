@@ -803,30 +803,6 @@
 <div id="settingsModal" class="modal">
     <div class="modal-content" style="max-width: 400px; border-radius: 12px;">
         <div class="settings-menu">
-            <button class="settings-option" onclick="openChangePassword()">
-                <i class="fas fa-key"></i>
-                <span>Change password</span>
-            </button>
-            <button class="settings-option" onclick="openNotificationSettings()">
-                <i class="fas fa-bell"></i>
-                <span>Notifications</span>
-            </button>
-            <button class="settings-option" onclick="openPrivacySettings()">
-                <i class="fas fa-lock"></i>
-                <span>Privacy and security</span>
-            </button>
-            <button class="settings-option" onclick="openActivityLog()">
-                <i class="fas fa-clock"></i>
-                <span>Login activity</span>
-            </button>
-            <button class="settings-option" onclick="openEmails()">
-                <i class="fas fa-envelope"></i>
-                <span>Emails from Instagram</span>
-            </button>
-            <button class="settings-option" onclick="openHelp()">
-                <i class="fas fa-question-circle"></i>
-                <span>Help</span>
-            </button>
             <button class="settings-option" style="border-top: 1px solid var(--border-color); color: #ed4956;" onclick="logout()">
                 <span>Log out</span>
             </button>
@@ -1669,11 +1645,9 @@
     }
 
     function logout() {
-        if (confirm('Are you sure you want to log out?')) {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('refreshToken');
-            window.location.href = '/login';
-        }
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
+        window.location.href = '/login';
     }
 
     // Followers Modal
