@@ -1254,6 +1254,62 @@
         const API_URL = '/api';
         let authToken = localStorage.getItem('authToken');
         let currentLoggedInUser = null;
+
+        // Initialize authentication state
+        async function initializeAuth() {
+            authToken = localStorage.getItem('authToken');
+
+            // If no JWT token but user might be logged in via OAuth/session
+            if (!authToken) {
+                try {
+                    // Try to get current user to see if we're authenticated via session
+                    const userResponse = await fetch(`${API_URL}/profile/me/`, {
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    });
+
+                    if (userResponse.ok) {
+                        currentLoggedInUser = await userResponse.json();
+
+                        // User is authenticated via session, get JWT token
+                        try {
+                            const tokenResponse = await fetch(`${API_URL}/auth/get-jwt-token/`, {
+                                method: 'POST',
+                                credentials: 'same-origin',
+                                headers: {
+                                    'X-CSRFToken': getCookie('csrftoken')
+                                }
+                            });
+
+                            if (tokenResponse.ok) {
+                                const tokens = await tokenResponse.json();
+                                authToken = tokens.access;
+                                localStorage.setItem('authToken', authToken);
+                                if (tokens.refresh) {
+                                    localStorage.setItem('refreshToken', tokens.refresh);
+                                }
+                            }
+                        } catch (error) {
+                            console.log('Could not get JWT token for OAuth user');
+                        }
+                    }
+                } catch (error) {
+                    console.log('No existing authentication found');
+                }
+            }
+
+            if (authToken) {
+                loadCurrentUser();
+                startCountRefresh();
+                updateFloatingButtonVisibility();
+            } else {
+                // Hide floating button if not logged in
+                const floatingBtn = document.getElementById('floatingMessagesBtn');
+                if (floatingBtn) floatingBtn.style.display = 'none';
+            }
+        }
         
         // Global fallback avatar function (prevents ERR_NAME_NOT_RESOLVED)
         function getDefaultAvatar(size = 44) {
@@ -2432,6 +2488,9 @@
             const floatingBtn = document.getElementById('floatingMessagesBtn');
             if (floatingBtn) floatingBtn.style.display = 'none';
         }
+
+        // Initialize authentication state (for OAuth users)
+        initializeAuth();
     </script>
     {% block extra_js %}{% endblock %}
 </body>

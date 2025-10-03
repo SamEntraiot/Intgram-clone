@@ -7,6 +7,7 @@ urlpatterns = [
     path('register/', views.RegisterView.as_view(), name='register'),
     path('login/', TokenObtainPairView.as_view(), name='login'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('auth/get-jwt-token/', views.get_jwt_token, name='get-jwt-token'),
     
     # Profile
     path('profile/me/', views.MyProfileView.as_view(), name='my-profile'),

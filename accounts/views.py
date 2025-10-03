@@ -404,3 +404,17 @@ def password_reset_confirm(request):
             {'error': 'Invalid reset link'},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_jwt_token(request):
+    """Get JWT token for currently authenticated user (for OAuth users)"""
+    from rest_framework_simplejwt.tokens import RefreshToken
+
+    refresh = RefreshToken.for_user(request.user)
+
+    return Response({
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    })
