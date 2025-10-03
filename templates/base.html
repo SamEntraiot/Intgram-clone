@@ -1226,10 +1226,6 @@
                     <i class="far fa-trash-alt"></i>
                     <span>Delete Story</span>
                 </button>
-                <button class="story-menu-item" onclick="reportStory()" id="menuReport">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>Report</span>
-                </button>
             </div>
         </div>
     </div>
@@ -1257,6 +1253,7 @@
         // Global variables
         const API_URL = '/api';
         let authToken = localStorage.getItem('authToken');
+        let currentLoggedInUser = null;
         
         // Global fallback avatar function (prevents ERR_NAME_NOT_RESOLVED)
         function getDefaultAvatar(size = 44) {
@@ -2112,18 +2109,22 @@
             const menu = document.getElementById('storyOptionsMenu');
             const menuDelete = document.getElementById('menuDelete');
             const menuDownload = document.getElementById('menuDownload');
-            const menuReport = document.getElementById('menuReport');
             
             if (!currentUserStories || currentStoryIndex >= currentUserStories.length) return;
             const currentStory = currentUserStories[currentStoryIndex];
             
-            // Show/hide delete based on ownership
-            if (currentStory.user && currentStory.user.id === (window.currentUserId || null)) {
+            // Show delete button only if it's the current user's story
+            if (currentLoggedInUser && currentStory.username === currentLoggedInUser.username) {
                 menuDelete.style.display = 'flex';
-                menuReport.style.display = 'none';
             } else {
                 menuDelete.style.display = 'none';
-                menuReport.style.display = 'flex';
+            }
+            
+            const isOpening = !menu.classList.contains('active');
+            
+            if (isOpening) {
+                // Pause story when opening menu
+                pauseStory();
             }
             
             menu.classList.toggle('active');
@@ -2131,6 +2132,8 @@
 
         function closeStoryMenu() {
             document.getElementById('storyOptionsMenu').classList.remove('active');
+            // Resume story when closing menu
+            resumeStory();
         }
 
         async function showStoryViewers() {
@@ -2233,9 +2236,42 @@
             closeStoryMenu();
         }
 
-        function reportStory() {
-            if (confirm('Report this story?')) {
-                alert('Story reported. Thank you!');
+        async function deleteCurrentStory() {
+            if (!currentUserStories || currentStoryIndex >= currentUserStories.length) return;
+            const currentStory = currentUserStories[currentStoryIndex];
+            
+            try {
+                // Delete story via API
+                await apiCall(`/stories/${currentStory.id}/`, {
+                    method: 'DELETE'
+                });
+                
+                // Close menu
+                closeStoryMenu();
+                
+                // Remove deleted story from current array
+                currentUserStories.splice(currentStoryIndex, 1);
+                
+                // If there are more stories, show the next one (or same index which is now the next story)
+                if (currentUserStories.length > 0) {
+                    // Adjust index if we deleted the last story
+                    if (currentStoryIndex >= currentUserStories.length) {
+                        currentStoryIndex = currentUserStories.length - 1;
+                    }
+                    // Display the story at current index
+                    displayStory(currentUserStories[currentStoryIndex]);
+                } else {
+                    // No more stories, close viewer
+                    closeStoryViewer();
+                    
+                    // Reload stories list on home page
+                    if (typeof loadStories === 'function') {
+                        loadStories();
+                    }
+                }
+            } catch (error) {
+                console.error('Error deleting story:', error);
+                alert('Failed to delete story');
                 closeStoryMenu();
             }
         }
@@ -2347,6 +2383,17 @@
             }).join('');
         }
 
+        // Load current logged-in user info
+        async function loadCurrentUser() {
+            if (!authToken) return;
+            try {
+                currentLoggedInUser = await apiCall('/profile/me/');
+                console.log('Current user loaded:', currentLoggedInUser.username);
+            } catch (error) {
+                console.error('Failed to load current user:', error);
+            }
+        }
+
         // Refresh counts periodically
         function startCountRefresh() {
             if (!authToken) return;
@@ -2377,6 +2424,7 @@
 
         // Initialize
         if (authToken) {
+            loadCurrentUser();
             startCountRefresh();
             updateFloatingButtonVisibility();
         } else {
