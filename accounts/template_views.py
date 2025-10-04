@@ -54,4 +54,27 @@ def oauth_complete_view(request):
 
 def social_signup_redirect(request):
     """Redirect social signup directly to oauth complete"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"Social signup redirect - User: {request.user}, Authenticated: {request.user.is_authenticated if hasattr(request.user, 'is_authenticated') else False}, Session oauth_user_id: {request.session.get('oauth_user_id')}")
+    
+    # Try to generate a temp token if user is authenticated
+    try:
+        if request.user and request.user.is_authenticated and request.user.id:
+            from django.core.signing import Signer
+            signer = Signer()
+            temp_token = signer.sign(request.user.id)
+            logger.info(f"Generated temp token for authenticated user: {request.user.id}")
+            return redirect(f'/oauth-complete?temp_token={temp_token}')
+        elif request.session.get('oauth_user_id'):
+            from django.core.signing import Signer
+            signer = Signer()
+            temp_token = signer.sign(request.session.get('oauth_user_id'))
+            logger.info(f"Generated temp token for session user: {request.session.get('oauth_user_id')}")
+            return redirect(f'/oauth-complete?temp_token={temp_token}')
+    except Exception as e:
+        logger.error(f"Error generating temp token: {e}")
+    
+    logger.warning("No temp token generated, redirecting to oauth-complete without token")
     return redirect('/oauth-complete')

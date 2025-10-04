@@ -26,6 +26,10 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         Saves a newly signed up social login. In case of auto-signup,
         the signup form is not available.
         """
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"save_user called for sociallogin: {sociallogin.user}")
+        
         user = sociallogin.user
         
         # Generate username from email or Google name
@@ -59,6 +63,19 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
             user.last_name = extra_data['family_name']
         
         user.save()
+        
+        # Explicitly log in the user to create a session
+        if user and user.pk:
+            login(request, user, backend='allauth.account.auth_backends.AuthenticationBackend')
+            
+        # Store user ID in session for temp token generation
+        if user and user.pk:
+            request.session['oauth_user_id'] = user.pk
+            # Also store email for additional verification
+            request.session['oauth_user_email'] = user.email
+            request.session.save()
+            logger.info(f"Stored user {user.pk} ({user.email}) in session")
+        
         return user
     
     def is_auto_signup_allowed(self, request, sociallogin):
@@ -72,26 +89,23 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         Returns the default URL to redirect to after successfully
         connecting a social account.
         """
-        # Generate a temporary token for JWT generation
+        # Generate a temporary token for JWT generation since session auth isn't working reliably
         try:
+            user_id = None
             if socialaccount.user and socialaccount.user.id:
+                user_id = socialaccount.user.id
+            elif request.session.get('oauth_user_id'):
+                user_id = request.session.get('oauth_user_id')
+                
+            if user_id:
                 from django.core.signing import Signer
                 signer = Signer()
-                temp_token = signer.sign(socialaccount.user.id)
+                temp_token = signer.sign(user_id)
                 return f'/oauth-complete?temp_token={temp_token}'
         except Exception:
             pass
         return '/oauth-complete'
     
-    def pre_social_login(self, request, sociallogin):
-        """
-        Invoked just after a user successfully authenticates via a
-        social provider, but before the login is actually processed.
-        """
-        # Since we allow multiple accounts with same email, 
-        # let Django Allauth handle the social login normally
-        # without trying to connect to existing users
-        pass
     
     def get_signup_form_class(self, request, sociallogin):
         """
@@ -104,24 +118,49 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         Populates user information from social provider data
         """
         user = super().populate_user(request, sociallogin, data)
-        
-        # Ensure user is properly logged in after creation
-        if user and not user.pk:
-            # This is a new user, make sure they get logged in
-            pass
-            
         return user
+    
+    def authentication_error(self, request, provider_id, error=None, exception=None, extra_context=None):
+        """
+        Handle authentication errors
+        """
+        return super().authentication_error(request, provider_id, error, exception, extra_context)
+    
+    def pre_social_login(self, request, sociallogin):
+        """
+        Invoked just after a user successfully authenticates via a
+        social provider, but before the login is actually processed.
+        """
+        # For existing users, make sure they get logged in with session
+        if sociallogin.user and sociallogin.user.pk:
+            login(request, sociallogin.user, backend='allauth.account.auth_backends.AuthenticationBackend')
+            # Store user ID in session for temp token generation
+            request.session['oauth_user_id'] = sociallogin.user.pk
+            request.session['oauth_user_email'] = sociallogin.user.email
+            request.session.save()
+        
+        # Since we allow multiple accounts with same email, 
+        # let Django Allauth handle the social login normally
+        # without trying to connect to existing users
+        super().pre_social_login(request, sociallogin)
+    
     
     def get_login_redirect_url(self, request):
         """
         Returns the default URL to redirect to after a successful login.
         """
-        # Generate a temporary token for JWT generation
+        # Generate a temporary token for JWT generation since session auth isn't working reliably
         try:
+            user_id = None
             if request.user and request.user.is_authenticated and request.user.id:
+                user_id = request.user.id
+            elif request.session.get('oauth_user_id'):
+                user_id = request.session.get('oauth_user_id')
+                
+            if user_id:
                 from django.core.signing import Signer
                 signer = Signer()
-                temp_token = signer.sign(request.user.id)
+                temp_token = signer.sign(user_id)
                 return f'/oauth-complete?temp_token={temp_token}'
         except Exception:
             pass

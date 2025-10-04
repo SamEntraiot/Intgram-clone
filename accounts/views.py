@@ -452,6 +452,10 @@ def get_jwt_token(request):
     """
     from rest_framework_simplejwt.tokens import RefreshToken
     from django.contrib.auth import authenticate
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    logger.info(f"JWT token request - User authenticated: {request.user.is_authenticated}, User: {request.user}, Session key: {request.session.session_key}")
     
     # Check if user is authenticated via session
     if request.user and request.user.is_authenticated:
@@ -488,6 +492,33 @@ def get_jwt_token(request):
             })
         except Exception:
             pass
+    
+    # Last resort: try to find user by session-stored email and ID
+    # This handles the case where OAuth just completed but session isn't working
+    try:
+        from django.contrib.auth.models import User
+        
+        oauth_user_id = request.session.get('oauth_user_id')
+        oauth_user_email = request.session.get('oauth_user_email')
+        
+        if oauth_user_id and oauth_user_email:
+            # Find user by both ID and email for security
+            user = User.objects.filter(id=oauth_user_id, email=oauth_user_email).first()
+            if user:
+                logger.info(f"Using session-stored user as fallback: {user.id} - {user.email}")
+                
+                refresh = RefreshToken.for_user(user)
+                return Response({
+                    'refresh': str(refresh),
+                    'access': str(refresh.access_token),
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'email': user.email,
+                    }
+                })
+    except Exception as e:
+        logger.error(f"Session-based user lookup failed: {e}")
     
     return Response(
         {'error': 'User not authenticated. Please login again.'}, 
